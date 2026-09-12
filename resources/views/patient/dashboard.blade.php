@@ -5,6 +5,7 @@
 <p>مرحباً {{ $patient->full_name }}</p>
 <p>الرقم الطبي: <strong>{{ $patient->medical_file_number }}</strong></p>
 <p>الطبيب المعالج: {{ $patient->primaryDoctor?->user?->name ?: '—' }}</p>
+<a class="btn" href="{{ route('patient.tests.index') }}">فحوصاتي ونتائجي</a>
 </div>
 <div class="card">
 <h3>طلباتي</h3>

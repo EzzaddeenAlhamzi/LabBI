@@ -58,6 +58,16 @@ class TestOrder extends Model
         return $this->hasMany(Sample::class);
     }
 
+    public function results(): HasMany
+    {
+        return $this->hasMany(Result::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ResultAttachment::class);
+    }
+
     public static function statusLabel(string $status): string
     {
         return match ($status) {

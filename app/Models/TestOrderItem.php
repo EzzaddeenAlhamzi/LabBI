@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TestOrderItem extends Model
 {
@@ -28,5 +29,10 @@ class TestOrderItem extends Model
     public function samples(): HasMany
     {
         return $this->hasMany(Sample::class);
+    }
+
+    public function result(): HasOne
+    {
+        return $this->hasOne(Result::class);
     }
 }
