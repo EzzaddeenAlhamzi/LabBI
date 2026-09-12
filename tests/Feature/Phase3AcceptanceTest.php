@@ -388,6 +388,134 @@ class Phase3AcceptanceTest extends TestCase
         $this->assertNotEmpty($out['provider_ref']);
     }
 
+    /** A9 gap: transport/exception email failure logs without corrupting approval */
+    public function test_email_transport_failure_logged_without_corrupting_approval(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+
+        [$lab, , $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+        $result = Result::firstOrFail();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('code', 'admin'))->firstOrFail();
+        $this->actingAs($admin)->post(route('lab.results.approve', $result))->assertRedirect();
+
+        $sent = NotificationDelivery::where('channel', NotificationDelivery::CHANNEL_EMAIL)->firstOrFail();
+        $this->assertSame(NotificationDelivery::STATUS_SENT, $sent->status);
+
+        $failing = NotificationDelivery::query()->create([
+            'notification_id' => $sent->notification_id,
+            'channel' => NotificationDelivery::CHANNEL_EMAIL,
+            'recipient' => 'fail@labbi.test',
+            'status' => NotificationDelivery::STATUS_PENDING,
+            'attempts' => 0,
+            'idempotency_key' => 'test-email-transport-fail',
+        ]);
+
+        Mail::shouldReceive('to')->once()->andThrow(new \RuntimeException('SMTP unavailable'));
+
+        try {
+            (new DeliverEmailNotificationJob($failing->id))->handle(app(\App\Services\AuditLogger::class));
+            $this->fail('Expected email transport exception');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('SMTP unavailable', $e->getMessage());
+        }
+
+        $this->assertSame(NotificationDelivery::STATUS_FAILED, $failing->fresh()->status);
+        $this->assertStringContainsString('SMTP unavailable', (string) $failing->fresh()->error_summary);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'email.failed']);
+        $this->assertSame(Result::STATUS_APPROVED, $result->fresh()->status);
+    }
+
+    /** A9 gap: patient authorized PDF download + cross-patient PDF blocked */
+    public function test_patient_pdf_download_authorized_and_cross_patient_blocked(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+
+        [$lab, , $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+        $result = Result::firstOrFail();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('code', 'admin'))->firstOrFail();
+        $this->actingAs($admin)->post(route('lab.results.approve', $result))->assertRedirect();
+
+        $report = GeneratedReport::firstOrFail();
+        $patient = User::whereHas('roles', fn ($q) => $q->where('code', 'patient'))->firstOrFail();
+
+        $this->actingAs($patient)->get(route('patient.results.show', $result))->assertOk();
+        $this->actingAs($patient)->get(route('reports.download', $report))->assertOk();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'pdf.downloaded']);
+
+        $this->actingAs($admin)->post(route('admin.patients.store'), [
+            'full_name' => 'مريض آخر',
+            'phone' => '0509998877',
+            'create_login' => 1,
+            'email' => 'otherpatient-p3@labbi.test',
+            'password' => 'password123',
+        ])->assertRedirect();
+        $other = User::where('email', 'otherpatient-p3@labbi.test')->firstOrFail();
+
+        $this->actingAs($other)->get(route('patient.results.show', $result))->assertForbidden();
+        $this->actingAs($other)->get(route('reports.download', $report))->assertForbidden();
+    }
+
+    /** A9 gap: already-sent email delivery job is idempotent (no re-send) */
+    public function test_duplicate_email_delivery_job_is_idempotent(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+
+        [$lab, , $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+        $result = Result::firstOrFail();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('code', 'admin'))->firstOrFail();
+        $this->actingAs($admin)->post(route('lab.results.approve', $result))->assertRedirect();
+
+        $delivery = NotificationDelivery::where('channel', NotificationDelivery::CHANNEL_EMAIL)->firstOrFail();
+        $this->assertSame(NotificationDelivery::STATUS_SENT, $delivery->status);
+        $attemptsBefore = $delivery->attempts;
+        $providerRef = $delivery->provider_ref;
+
+        Mail::fake(); // reset assertions
+        (new DeliverEmailNotificationJob($delivery->id))->handle(app(\App\Services\AuditLogger::class));
+
+        Mail::assertNothingSent();
+        $fresh = $delivery->fresh();
+        $this->assertSame(NotificationDelivery::STATUS_SENT, $fresh->status);
+        $this->assertSame($attemptsBefore, $fresh->attempts);
+        $this->assertSame($providerRef, $fresh->provider_ref);
+    }
+
+    /** A9 gap: AC-12 discovered_at remains set alongside notified_at after critical detect */
+    public function test_ac12_discovered_and_notified_timestamps_on_critical(): void
+    {
+        Mail::fake();
+        [$lab, , $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 5,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+
+        $alert = CriticalAlert::firstOrFail();
+        $this->assertNotNull($alert->discovered_at);
+        $this->assertNotNull($alert->notified_at);
+        $this->assertSame('sent', $alert->notification_status);
+        $this->assertTrue($alert->notified_at->greaterThanOrEqualTo($alert->discovered_at));
+    }
+
     /**
      * @return array{0: User, 1: TestOrder, 2: \App\Models\TestOrderItem}
      */
