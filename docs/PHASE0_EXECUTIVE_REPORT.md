@@ -73,7 +73,7 @@ Core tables: users/roles/permissions; patients (unique `medical_file_number`); d
 
 ### 7) Agent / team structure
 
-Specialized non-overlapping owners: **A0** Coordinator/docs · **A1** Platform/Auth · **A2** Master data/catalog · **A3** Orders/samples/workflow · **A4** Results/critical/review · **A5** Comms (email/WA/PDF) · **A6** Portal UI · **A7** BI · **A8** Security/ops · **A9** QA. Hard rule: only A4 owns critical classification; only A12/M12 workflow owns status transitions; only A17/M17 creates notifications.
+Specialized non-overlapping owners: **A0** Coordinator/docs · **A1** Platform/Auth · **A2** Master data/catalog · **A3** Orders/samples/workflow · **A4** Results/critical/review · **A5** Comms (email/WA/PDF) · **A6** Portal UI · **A7** BI · **A8** Security/ops · **A9** QA. Hard rule: only A4 owns critical classification; only M12 (Workflow) owns status transitions; only M17 (Notifications) creates notifications.
 
 ### 8) Parallelization strategy
 
