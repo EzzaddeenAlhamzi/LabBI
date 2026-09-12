@@ -48,7 +48,22 @@ class Phase2AcceptanceTest extends TestCase
         $this->assertSame(OrderStatus::PENDING_REVIEW, $order->fresh()->status);
     }
 
-    public function test_ac08_ac09_critical_engine_creates_alert(): void
+    public function test_ac08_normal_result_does_not_create_critical_alert(): void
+    {
+        [$lab, , $item] = $this->orderReadyForEntry();
+
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+
+        $result = Result::firstOrFail();
+        $this->assertSame(ResultClassification::NORMAL, $result->classification);
+        $this->assertSame(0, CriticalAlert::count());
+    }
+
+    public function test_ac08_ac09_ac10_ac12_critical_engine_creates_alert_with_fields(): void
     {
         [$lab, $order, $item] = $this->orderReadyForEntry();
 
@@ -63,9 +78,21 @@ class Phase2AcceptanceTest extends TestCase
         $alert = CriticalAlert::firstOrFail();
         $this->assertSame($result->id, $alert->result_id);
         $this->assertSame($order->patient_id, $alert->patient_id);
+        $this->assertSame($order->id, $alert->test_order_id);
+        $this->assertSame($item->test_id, $alert->test_id);
+        $this->assertSame($order->doctor_id, $alert->doctor_id);
+        $this->assertEquals(5, (float) $alert->detected_value);
+        $this->assertSame('g/dL', $alert->unit);
+        $this->assertIsArray($alert->threshold_snapshot);
+        $this->assertArrayHasKey('critical_low', $alert->threshold_snapshot);
+        $this->assertArrayHasKey('critical_high', $alert->threshold_snapshot);
         $this->assertNotNull($alert->discovered_at);
         $this->assertSame(CriticalAlert::STATUS_OPEN, $alert->status);
         $this->assertDatabaseHas('audit_logs', ['action' => 'critical.detected']);
+
+        $this->actingAs($lab)->get(route('lab.critical.index'))
+            ->assertOk()
+            ->assertSee((string) $alert->id);
     }
 
     public function test_ac13_approve_via_permission_not_lab_tech(): void
@@ -83,6 +110,14 @@ class Phase2AcceptanceTest extends TestCase
             'comment' => 'محاولة فني',
         ])->assertForbidden();
 
+        $this->actingAs($lab)->post(route('lab.results.return', $result), [
+            'comment' => 'محاولة إعادة',
+        ])->assertForbidden();
+
+        $this->actingAs($lab)->post(route('lab.results.reject', $result), [
+            'comment' => 'محاولة رفض',
+        ])->assertForbidden();
+
         $admin = User::whereHas('roles', fn ($q) => $q->where('code', 'admin'))->firstOrFail();
         $this->actingAs($admin)->post(route('lab.results.approve', $result), [
             'comment' => 'معتمد',
@@ -92,6 +127,28 @@ class Phase2AcceptanceTest extends TestCase
         $this->assertNotNull($result->fresh()->approved_at);
         $this->assertDatabaseHas('audit_logs', ['action' => 'results.approved']);
         $this->assertContains($order->fresh()->status, [OrderStatus::READY, OrderStatus::COMPLETED]);
+    }
+
+    public function test_ac07_edit_before_approval_writes_edited_audit(): void
+    {
+        [$lab, , $item] = $this->orderReadyForEntry();
+
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 13,
+            'unit' => 'g/dL',
+            'notes' => 'أول مسودة',
+            'action' => 'draft',
+        ])->assertRedirect();
+
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'notes' => 'تعديل',
+            'action' => 'draft',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('audit_logs', ['action' => 'results.edited']);
+        $this->assertSame(14.0, (float) Result::firstOrFail()->value_numeric);
     }
 
     public function test_return_for_correction_and_reedit(): void
@@ -186,6 +243,49 @@ class Phase2AcceptanceTest extends TestCase
         $this->actingAs($patientUser)->get(route('patient.results.show', $result))->assertOk()->assertSee((string) $result->value_numeric);
     }
 
+    public function test_doctor_isolation_other_doctor_cannot_view_result(): void
+    {
+        [$lab, $order, $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+        $result = Result::firstOrFail();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('code', 'admin'))->firstOrFail();
+        $this->actingAs($admin)->post(route('lab.results.approve', $result))->assertRedirect();
+
+        $this->actingAs($admin)->post(route('admin.doctors.store'), [
+            'name' => 'طبيب آخر',
+            'email' => 'otherdoc@labbi.test',
+            'password' => 'password123',
+            'specialty' => 'باطنية',
+        ])->assertRedirect();
+
+        $otherDoctor = User::where('email', 'otherdoc@labbi.test')->firstOrFail();
+        $this->actingAs($otherDoctor)->get(route('doctor.results.show', $result))->assertForbidden();
+        $this->actingAs($otherDoctor)->get(route('doctor.results.index'))
+            ->assertOk()
+            ->assertDontSee($order->order_number);
+    }
+
+    public function test_patient_pending_result_hides_numeric_value(): void
+    {
+        [$lab, , $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14.25,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+        $result = Result::firstOrFail();
+
+        $patientUser = User::whereHas('roles', fn ($q) => $q->where('code', 'patient'))->firstOrFail();
+        $this->actingAs($patientUser)->get(route('patient.results.show', $result))
+            ->assertOk()
+            ->assertSee('حالة الفحص')
+            ->assertDontSee('14.25');
+    }
+
     public function test_patient_cannot_view_other_result(): void
     {
         [$lab, $order, $item] = $this->orderReadyForEntry();
@@ -210,6 +310,35 @@ class Phase2AcceptanceTest extends TestCase
 
         $otherUser = User::where('email', 'otherpatient@labbi.test')->firstOrFail();
         $this->actingAs($otherUser)->get(route('patient.results.show', $result))->assertForbidden();
+    }
+
+    public function test_ac18_completed_order_can_archive_and_patient_sees_history(): void
+    {
+        [$lab, $order, $item] = $this->orderReadyForEntry();
+        $this->actingAs($lab)->post(route('lab.results.save', $item), [
+            'value_numeric' => 14,
+            'unit' => 'g/dL',
+            'action' => 'submit',
+        ])->assertRedirect();
+        $result = Result::firstOrFail();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('code', 'admin'))->firstOrFail();
+        $this->actingAs($admin)->post(route('lab.results.approve', $result))->assertRedirect();
+
+        $order = $order->fresh();
+        $this->assertSame(OrderStatus::COMPLETED, $order->status);
+
+        app(\App\Domain\Workflow\WorkflowTransitionService::class)
+            ->transition($order, OrderStatus::ARCHIVED);
+        $this->assertSame(OrderStatus::ARCHIVED, $order->fresh()->status);
+        $this->assertNotNull($order->fresh()->archived_at);
+
+        $patientUser = User::whereHas('roles', fn ($q) => $q->where('code', 'patient'))->firstOrFail();
+        $this->actingAs($patientUser)->get(route('patient.tests.index'))
+            ->assertOk()
+            ->assertSee($order->order_number);
+        $this->actingAs($patientUser)->get(route('patient.results.show', $result))
+            ->assertOk()
+            ->assertSee('14');
     }
 
     public function test_lab_portal_screens_render(): void
