@@ -1,79 +1,100 @@
 # LabBI — Phase 4 Acceptance Report
 
-**Branch:** `cursor/phase4-bi-reporting-b1f0`  
+**Branch (feature):** `cursor/phase4-bi-reporting-b1f0` @ `59d3db6`  
+**QA gap branch:** `cursor/phase4-a9-qa-gaps-e188`  
+**Feature PR:** https://github.com/EzzaddeenAlhamzi/LabBI/pull/9  
 **Date (UTC):** 2026-09-12  
-**Scope:** Phase 4 Intelligence (BI / comparison / TAT) — implementer acceptance  
-**Verdict:** **PASS WITH NOTES** (implementer) — Phase 4 implementer-complete; **A8/A9 still required** before any Phase 5 gate
+**Reviewer:** A9 — Independent QA (black-box)  
+**Scope:** Phase 4 Intelligence (BI / comparison / TAT) — **STOP before Phase 5**  
+**Verdict:** **PASS WITH NOTES**
 
 ---
 
-## Acceptance criteria
+## Test counts
 
-| AC | Description | Result | Evidence |
-|---|---|---|---|
-| AC-19 | Doctor can compare new vs prior exam | **PASS** | `Phase4AcceptanceTest::test_ac19_doctor_historical_comparison_and_trend` |
-| AC-20 | Manager sees test counts and completion times | **PASS** | `Phase4AcceptanceTest::test_ac20_*` + `BIQueryService` cards/TAT |
-
-### Supporting requirements
-
-| ID | Result | Notes |
-|---|---|---|
-| BI-01…BI-05 | PASS | Cards live; no diagnosis language; charts optional (D-014) |
-| CMP-01…CMP-03 | PASS | Filters + classification + trend |
-| CRT-11 / CRT-12 | PASS | Critical dashboard + TAT |
-| PAT-10 | PASS | Doctor comparison |
-| UI-A-01 / UI-A-18 / UI-A-19 / UI-D-09 | PASS | Arabic RTL screens |
-
----
-
-## 20 Completion Items — Acceptance Mapping
-
-| # | Item | Acceptance |
-|---|---|---|
-| 1 | Authoritative BI layer | Controllers call `App\Services\Bi\*`; no result write paths in BI |
-| 2 | BIQueryService cards | Counts match DB; no static placeholders |
-| 3 | OperationalReportService | Server filters; invalid status rejected |
-| 4 | HistoricalComparisonService | Approved-only; doctor patient isolation |
-| 5 | TATService | Unit tests for intervals + missing-timestamp limitations |
-| 6 | CriticalAnalyticsService | Reads `critical_alerts` only |
-| 7 | BiReportFilters | ValidationException on bad dates/ids/status |
-| 8 | TrendCalculator | Rising/Falling/Stable/incompatible unit tests |
-| 9 | Admin BI Dashboard UI | Route + RTL content assertions |
-| 10 | Performance + TAT docs | Documented in completion report + code docblocks |
-| 11 | Critical Cases Dashboard | Filters exercised in feature test |
-| 12 | Doctor Comparison UI | AC-19 feature test |
-| 13 | Visualization | Cards/tables; volume from same service |
-| 14 | Ops reports ≠ clinical PDF | Separate routes/services from Phase 3 PDF |
-| 15 | ACL | Patient/lab forbidden from admin BI; doctor comparison scoped |
-| 16 | Single migration | `2026_09_12_400000_create_phase4_bi_indexes.php` |
-| 17 | Timestamp stamping | Workflow + ResultEntryService |
-| 18 | Docs updated | PROJECT_PROGRESS, MATRIX, API, DECISIONS, PHASE4_* |
-| 19 | Full green suite | **89 passed / 489 assertions** |
-| 20 | Stop before Phase 5 | No backup/audit UI/hardening work |
-
----
-
-## Regression
-
-| Suite | Status |
+| Suite | Result |
 |---|---|
-| P1 | PASS |
-| P2 | PASS |
-| P3 | PASS |
-| P4 | PASS |
+| Baseline Phase 4 branch | 89 passed / 489 assertions |
+| After A9 gap tests | **93 passed / 560 assertions** |
+| Unit (Critical, Workflow, TAT, Trends, OrderStatus) | PASS |
+| Feature Phase1AcceptanceTest | 10 PASS |
+| Feature Phase2AcceptanceTest | 16 PASS |
+| Feature Phase3AcceptanceTest | 17 PASS |
+| Feature Phase4AcceptanceTest | 9 PASS |
+| Feature Phase4A9QaGapTest (new) | **4 PASS** |
+
+```bash
+php artisan test
+# Tests: 93 passed (560 assertions)
+```
 
 ---
 
-## Notes / limitations
+## Acceptance criteria (independent)
 
-1. Order TAT prefers `completed_at`; if absent uses latest result `approved_at`.  
-2. Analysis start uses `analysis_started_at` stamped on `IN_ANALYSIS` transition (including auto-start on first entry).  
-3. Trends are operational indicators only — UI states non-diagnostic.  
-4. Charts not required (D-014); status volume table optional presentation of backend counts.
+| AC / ID | Result | Evidence |
+|---|---|---|
+| AC-19 | **PASS** | Doctor comparison UI + trend; `Phase4AcceptanceTest::test_ac19_*`; A9 falling/date-filter/pending-excluded |
+| AC-20 | **PASS** | Independent card counts + TAT seconds match `BIQueryService` / HTTP (`Phase4A9QaGapTest::test_a9_independent_metric_correctness_*`) |
+| CMP-01 | **PASS** | Patient/test/date filters; date range yields insufficient trend when &lt;2 points |
+| CMP-02 | **PASS** | Rows expose date, value, unit, classification labels |
+| CMP-03 | **PASS** | Rising / Falling / Stable / incompatible_units |
+| BI-01 | **PASS** | Live cards vs DB counts (patients, doctors, catalog, today, awaiting, analysis, review, ready, deferred, rejected, critical) |
+| BI-02 | **PASS** | Controlled timestamps → expected order TAT 14400s, critical handling 300s |
+| BI-03 | **PASS** | Operational report filters + invalid status rejected |
+| BI-04 | **PASS** | Cards/tables; charts not required |
+| BI-05 | **PASS** | UI “غير تشخيصي”; no diagnosis language |
+| CRT-11 | **PASS** | Critical Cases dashboard shows stored alerts; classification alone does **not** invent rows |
+| CRT-12 | **PASS** | TATService unit + independent aggregate assertions |
 
 ---
 
-## A8 / A9 gate
+## Required verifications
+
+| Check | Result |
+|---|---|
+| Full `php artisan test` P1–P4 | **PASS** (93 / 560) |
+| Metric correctness with controlled data (not page-load only) | **PASS** — expected cards/TAT/critical/trend vs services + HTTP |
+| Historical comparison: approved-only | **PASS** (draft + pending excluded) |
+| Historical comparison: ACL | **PASS** (unrelated doctor blocked; patient forbidden) |
+| Historical comparison: filters | **PASS** (date range) |
+| Historical comparison: incompatible units | **PASS** |
+| Critical dashboard = Phase 2 stored alerts only | **PASS** |
+| Clinical E2E regression (order→sample→result→critical→approve→notify→PDF→visibility) | **PASS** — Phase 4 does not alter flow; BI surfaces reflect post-approval state |
+
+---
+
+## Gaps closed by A9 (tests only)
+
+Added `tests/Feature/Phase4A9QaGapTest.php`:
+
+1. Independent metric correctness (counts, TAT intervals, critical handling, trend math vs dashboard HTTP)
+2. Comparison date filter + falling/stable + pending (submitted) exclusion
+3. Critical dashboard empty when classification=critical but no `critical_alerts` row
+4. Clinical E2E regression including BI/critical/comparison after approval
+
+---
+
+## Defects
+
+None blocking.
+
+### Notes (non-blocking)
+
+1. Order TAT prefers `completed_at`; else latest `approved_at`.
+2. Trends are operational only (non-diagnostic); UI states this.
+3. Charts optional (D-014).
+4. Implementer report claimed 89/489; A9 baseline confirmed, then +4 gap tests → 93/560.
+
+---
+
+## Screenshots
+
+Store media: `media/phase4-qa-*.png` (BI dashboard, critical cases, doctor comparison, operational reports).
+
+---
+
+## Gate
 
 **STOP — do not start Phase 5.**  
-Implementer complete. Independent A8 security review and A9 black-box AC-19/AC-20 must complete before any consolidated Phase 5 readiness claim.
+A9 QA complete for Phase 4. Coordinator consolidates with A8 before any Phase 5 readiness claim.
