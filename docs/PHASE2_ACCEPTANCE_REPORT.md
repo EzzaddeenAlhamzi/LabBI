@@ -1,9 +1,25 @@
-# LabBI — Phase 2 Acceptance Report
+# LabBI — Phase 2 Acceptance Report (A9 Independent QA)
 
-**PR:** https://github.com/EzzaddeenAlhamzi/LabBI/pull/3  
-**Branch:** `cursor/phase2-results-workflow-9aaf`  
+**PR (feature):** https://github.com/EzzaddeenAlhamzi/LabBI/pull/3  
+**Branch under review:** `cursor/phase2-results-workflow-9aaf`  
+**QA branch (gap tests):** `cursor/phase2-a9-qa-gaps-71f7`  
+**Reviewer:** A9 — Independent QA  
 **Date (UTC):** 2026-09-12  
-**Automated suite:** `php artisan test` → **47 passed (174 assertions)**
+**Verdict:** **PASS WITH NOTES**
+
+---
+
+## Suite results (independent re-run)
+
+| Run | Command | Result |
+|---|---|---|
+| Baseline on Phase 2 branch | `php artisan test` | **47 passed (174 assertions)** |
+| After A9 gap-test extensions | `php artisan test` | **52 passed (222 assertions)** |
+| Phase 1 regression | `Phase1AcceptanceTest` (10) | **PASS** — no P1 regressions |
+| Critical engine matrix | `CriticalValueEngineTest` (19) | **PASS** |
+| Workflow units | `OrderStatusTest` + `WorkflowTransitionServiceTest` | **PASS** |
+
+Critical Engine matrix verified: below/normal/above, critical low/high, inclusive boundaries, missing/inactive/empty range, invalid/missing value, unit mismatch + normalization, threshold snapshot (+ CAT-04 note).
 
 ---
 
@@ -11,69 +27,72 @@
 
 | Check | Result |
 |---|---|
-| Phase 1 PR #2 merged to `main` | Yes (`7772e54`, merged 2026-09-12) |
-| Work based on latest `origin/main` | Yes |
+| Phase 1 PR #2 on `main` | Yes (`7772e54`) |
+| Phase 2 branch based on latest main | Yes |
 | Locked decisions (Laravel, `results.approve`, no Receptionist, analyzer Future) | Honored |
+| CriticalValueEngine single authoritative impl (not rewritten by A9) | Confirmed |
 | Phase 3+ not started | Confirmed |
 
 ---
 
-## Completion items (user brief — 12)
+## Acceptance criteria checklist (A9)
 
-| # | Item | Status | Evidence |
-|---|---|---|---|
-| 1 | Result entry: open order, tests, value, units, notes, draft, validation, edit before approval, audit | **Pass** | `ResultEntryService`, lab entry UI, `Phase2AcceptanceTest::test_ac07_*`, audits `results.entered`/`edited`/`submitted` |
-| 2 | Workflow state machine backend-enforced | **Pass** | `OrderStatus` + `WorkflowTransitionService`; unit + feature transitions; illegal skips throw |
-| 3 | Critical Value Engine isolated; single authoritative impl; classify + persist + alert + timestamp; no invented medical ranges; extensive unit tests | **Pass** | `CriticalValueEngine` only; `CriticalValueEngineTest` (below/normal/above, critical low/high, boundaries, missing range, invalid, wrong unit); CAT-04 note in snapshot |
-| 4 | Critical Alerts in-system only | **Pass** | `critical_alerts` model/UI; no WA/email code paths; `test_ac08_ac09_*` |
-| 5 | Review/Approval queue/page/approve/return/reject/notes/timestamp/audit via `results.approve` | **Pass** | `ResultReviewService` + lab review UI; lab tech forbidden, admin allowed (`test_ac13_*`, return test) |
-| 6 | Attachments PDF+images, MIME/size, ACL, links, audit; no final PDF report generator | **Pass** | `AttachmentService`; mime reject test; upload/download audit; no PDF report module |
-| 7 | Lab portal screens | **Pass** | Routes + views; `test_lab_portal_screens_render` |
-| 8 | Doctor portal Results / Critical / Details | **Pass** | `doctor.results.*`, `doctor.critical.index`; feature visibility test |
-| 9 | Patient portal My Tests / Details / status / historical | **Pass** | `patient.tests.index`, approved details + non-approved status view; IDOR denied |
-| 10 | Audit min set | **Pass** | entered, edited, submitted, critical.detected, returned, approved, attachments.uploaded |
-| 11 | Draft PR from Phase 2 branch | **Pass** | PR #3 draft |
-| 12 | Phase 1 + Phase 2 tests; no P1 regressions | **Pass** | Full suite green |
+| AC | Result | Verified how |
+|---|---|---|
+| AC-07 Result entry | **Pass** | Feature: draft/submit, edit→`results.edited`, validation, pre-sample blocked |
+| AC-08 Normal → no critical alert | **Pass** | Feature gap test + unit normal/abnormal matrix |
+| AC-09 Over critical → detect | **Pass** | Feature critical submit + unit critical low/high |
+| AC-10 Alert content fields | **Pass** | Asserted patient/order/test/doctor/value/unit/thresholds/time/status + lab critical UI |
+| AC-11 Doctor critical visibility (in-system) | **Pass** | Doctor portal + isolation (other doctor 403) |
+| AC-12 Discovery timestamp | **Pass** | `discovered_at` non-null; `notified_at` deferred P3 |
+| AC-13 Approval workflow | **Pass** | Admin approve via `results.approve`; tech approve/return/reject **403** |
+| AC-18 Archive/history (partial) | **Partial Pass** | Completed→archived transition + patient historical approved visibility; full archive/PDF UI remains P3 |
 
----
+### Cross-cutting security / RBAC
 
-## Acceptance criteria mapping (AC-07…AC-13, partial AC-18)
-
-| AC | Result |
+| Check | Result |
 |---|---|
-| AC-07 Result entry | Pass (automated) |
-| AC-08 Classification | Pass (engine unit matrix) |
-| AC-09 Critical alert creation | Pass |
-| AC-10 Alert content fields | Pass (patient/order/test/value/thresholds/time/status) |
-| AC-11 Doctor visibility of critical (in-system) | Pass (portal; no external notify — P3) |
-| AC-12 Discovery timestamp | Pass |
-| AC-13 Approval workflow | Pass |
-| AC-18 Archive/history (partial) | Partial — completed/archived transitions + patient historical approved visibility; full archive/PDF tabs remain P3 |
+| RBAC approve (permission, not role hardcode) | **Pass** |
+| Patient isolation (IDOR) | **Pass** |
+| Doctor isolation (other doctor) | **Pass** (A9 added) |
+| Technician restrictions (approve/return/reject) | **Pass** (A9 extended) |
+| Invalid workflow transitions blocked | **Pass** (unit) |
+| Audit records (entered/edited/submitted/critical/returned/approved/attachments) | **Pass** |
+| Patient pending hides numeric value | **Pass** (A9 added) |
 
 ---
 
-## A8 / A9 review commands
+## Manual / UI smoke (A9)
 
-```bash
-git fetch origin main
-git checkout cursor/phase2-results-workflow-9aaf
-composer install
-cp .env.example .env && php artisan key:generate
-# phpunit uses sqlite :memory: via phpunit.xml
-php artisan test
-php artisan test --filter=Phase1AcceptanceTest
-php artisan test --filter=Phase2AcceptanceTest
-php artisan test --filter=CriticalValueEngineTest
-```
+Seeded SQLite + `php artisan serve`. Flow: doctor order → lab sample → critical Hb submit → alert → admin review → doctor/patient portals.
 
-Manual smoke (optional): seed with `php artisan migrate --seed`, login as `lab@labbi.local` / `admin@labbi.local` / `doctor@labbi.local` / `patient@labbi.local` (password: `password`).
+Screenshots: `/cursor/stores/bc-97b82a02-8fdc-4ee7-b7fd-3796db4a7e86/media/phase2-qa-*.png`
+
+| Artifact | Flow |
+|---|---|
+| `phase2-qa-login.png` | Login |
+| `phase2-qa-lab-dashboard.png` | Lab dashboard |
+| `phase2-qa-result-entry.png` | Result entry |
+| `phase2-qa-critical-alert.png` | Critical alert (Hb 5.5, CL 7 / CH 20) |
+| `phase2-qa-admin-review.png` | Admin review queue (`results.approve`) |
+| `phase2-qa-doctor-results.png` | Doctor critical/results |
+| `phase2-qa-patient-tests.png` | Patient my tests |
 
 ---
 
-## Residual risks
+## Defects
 
-1. **CAT-04** — demo ranges must not be treated as clinical truth in production  
-2. External notification of critical values is deferred to Phase 3 (by design)  
-3. Final bilingual PDF report deferred to Phase 3  
+| Sev | Finding | Disposition |
+|---|---|---|
+| — | No Sev-1 / functional Phase 2 defects found | — |
+| Note | Catalog ranges remain demo until **CAT-04** | By design |
+| Note | External notify / PDF report / full archive UI | Deferred Phase 3 (by design) |
+| Note | A9 strengthened automated coverage; no production code change required | Gap tests only |
 
-**Verdict:** Phase 2 scope complete pending user approval. Do not start Phase 3.
+---
+
+## Recommendation
+
+**Phase 2 is ready for user approval.** Do **not** start Phase 3 until the user explicitly approves PR #3 (and merges A9 gap-test PR if desired).
+
+Internal detail: `/cursor/stores/bc-97b82a02-8fdc-4ee7-b7fd-3796db4a7e86/internal/phase2-a9-qa.md`
