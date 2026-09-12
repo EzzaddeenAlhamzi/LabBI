@@ -492,12 +492,12 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification method |
 |---|---|---|---|---|---|
-| AC-01 | Admin can create doctor, technician, patient and assign permissions | Users / RBAC | P1 | planning | E2E scenario |
-| AC-02 | Patient cannot access another patient’s data | RBAC / Patients | P1 | planning | Negative authz E2E |
-| AC-03 | Create patient with unique medical ID | Patients | P1 | planning | E2E + uniqueness |
-| AC-04 | Create order linked to patient and doctor | Orders | P1 | planning | E2E |
-| AC-05 | Order appears to laboratory | Orders / Lab | P1 | planning | E2E |
-| AC-06 | Confirm sample receipt | Samples | P1 | planning | E2E |
+| AC-01 | Admin can create doctor, technician, patient and assign permissions | Users / RBAC | P1 | verified | Feature test Phase1AcceptanceTest |
+| AC-02 | Patient cannot access another patient’s data | RBAC / Patients | P1 | verified | Feature test Phase1AcceptanceTest |
+| AC-03 | Create patient with unique medical ID | Patients | P1 | verified | Feature test Phase1AcceptanceTest |
+| AC-04 | Create order linked to patient and doctor | Orders | P1 | verified | Feature test Phase1AcceptanceTest |
+| AC-05 | Order appears to laboratory | Orders / Lab | P1 | verified | Feature test Phase1AcceptanceTest |
+| AC-06 | Confirm sample receipt | Samples | P1 | verified | Feature test Phase1AcceptanceTest |
 | AC-07 | Enter result | Results | P2 | planning | E2E |
 | AC-08 | Normal result does not create Critical Alert | Critical Engine | P2 | planning | E2E |
 | AC-09 | Over critical limit → automatic detection | Critical Engine | P2 | planning | E2E |
@@ -512,10 +512,10 @@ Every screen below is a requirement derived from source §35.
 | AC-18 | Exam archived | Archive | P2–P3 | planning | E2E |
 | AC-19 | Doctor can compare new vs prior exam | Comparison | P4 | planning | E2E |
 | AC-20 | Manager sees test counts and completion times | BI | P4 | planning | E2E |
-| AC-21 | Permissions block unauthorized access | RBAC | P1 | planning | Negative E2E suite |
+| AC-21 | Permissions block unauthorized access | RBAC | P1 | verified | Feature test Phase1AcceptanceTest |
 | AC-22 | Daily backup executes | Backup | P5 | planning | Ops E2E |
 | AC-23 | Backup restore succeeds | Backup | P5 | planning | Ops E2E |
-| AC-24 | UI works in Arabic | i18n | P1 | planning | Localization QA |
+| AC-24 | UI works in Arabic | i18n | P1 | verified | RTL Arabic shell assert + manual QA |
 | AC-25 | UIs work on target browsers | Frontend | P5 | planning | Cross-browser QA |
 
 ---
