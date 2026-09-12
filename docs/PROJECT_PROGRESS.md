@@ -51,7 +51,7 @@
 | DECISIONS.md | done | |
 | RISKS_AND_ASSUMPTIONS.md | done | |
 | PHASE0_EXECUTIVE_REPORT.md | done | |
-| Commit + draft PR | in progress | feature branch |
+| Commit + draft PR | done | Branch `cursor/phase0-planning-docs-d9f0`; PR #1 |
 | User approval for Phase 1 | `not started` | **STOP gate** |
 
 ---
