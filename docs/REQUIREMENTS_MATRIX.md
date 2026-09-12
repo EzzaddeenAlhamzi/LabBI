@@ -60,9 +60,9 @@
 | PAT-04 | Edit patient data (prefer soft delete over hard delete for medical records) | Patients | P1 | approved | Update + soft-delete tests |
 | PAT-05 | Show linked doctor(s) | Patients | P1 | approved | Relationship display tests |
 | PAT-06 | Show all patient orders | Patients | P1 | approved | Order list on patient profile |
-| PAT-07 | Show all patient results | Patients | P2 | in progress | Results tab; AC-15 |
-| PAT-08 | Show attachments | Patients / Attachments | P2 | in progress | Attachments tab |
-| PAT-09 | Show laboratory medical history | Patients / Archive | P2–P4 | in progress | History view; AC-18 |
+| PAT-07 | Show all patient results | Patients | P2 | verified | Results tab; AC-15 |
+| PAT-08 | Show attachments | Patients / Attachments | P2 | verified | Attachments tab |
+| PAT-09 | Show laboratory medical history | Patients / Archive | P2–P4 | verified | History view; AC-18 |
 | PAT-10 | Compare prior results | Comparison | P4 | planning | Comparison UI; AC-19 |
 
 ---
@@ -90,8 +90,8 @@
 | ORD-05 | Generate unique order number | Orders | P1 | approved | Uniqueness constraint |
 | ORD-06 | Record order date/time | Orders | P1 | approved | Timestamp assertions |
 | ORD-07 | Send/submit order electronically to laboratory | Orders | P1 | approved | Appears on lab queue; AC-05 |
-| ORD-08 | Display order status | Orders / Workflow | P1–P2 | in progress | Status transitions visible |
-| ORD-09 | Archive order | Orders / Archive | P2–P5 | in progress | Archived flag/state; AC-18 |
+| ORD-08 | Display order status | Orders / Workflow | P1–P2 | verified | Status transitions visible |
+| ORD-09 | Archive order | Orders / Archive | P2–P5 | verified | Archived flag/state; AC-18 |
 | ORD-10 | Search orders | Orders | P1 | approved | Search tests |
 | ORD-11 | Doctor can create test order (logical requirement; missing from one doctor feature list in source) | Orders / Doctor Portal | P1 | approved | Doctor Create Order screen; AC-04 |
 
@@ -107,8 +107,8 @@
 | SMP-04 | Track sample status | Samples / Workflow | P1–P2 | approved | Status machine tests |
 | SMP-05 | Confirm sample receipt | Samples | P1 | approved | AC-06 |
 | SMP-06 | Match sample to order | Samples | P1 | approved | Mismatch rejection path |
-| SMP-07 | Reject sample when needed | Samples | P2 | in progress | Rejected state + reason |
-| SMP-08 | Start analysis | Samples / Workflow | P2 | in progress | Transition to In Analysis |
+| SMP-07 | Reject sample when needed | Samples | P2 | verified | Rejected state + reason |
+| SMP-08 | Start analysis | Samples / Workflow | P2 | verified | Transition to In Analysis |
 
 ---
 
@@ -116,9 +116,9 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| WFL-01 | Unified status model: Requested → Sample Received → In Analysis → Pending Review → Ready → Completed → Archived; exceptions Deferred, Rejected | Workflow | P1–P2 | in progress | State machine unit tests |
+| WFL-01 | Unified status model: Requested → Sample Received → In Analysis → Pending Review → Ready → Completed → Archived; exceptions Deferred, Rejected | Workflow | P1–P2 | verified | State machine unit tests |
 | WFL-02 | Map legacy source labels (قيد التنفيذ / مكتمل / مرفوض / قيد التحليل / جاهز / مؤجل) onto unified model | Workflow | P0–P1 | planning | Mapping table review in DECISIONS |
-| WFL-03 | Lab dashboard queues reflect unified statuses | Lab Portal | P2 | in progress | Dashboard queue tests |
+| WFL-03 | Lab dashboard queues reflect unified statuses | Lab Portal | P2 | verified | Dashboard queue tests |
 
 ---
 
@@ -126,17 +126,17 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| RES-01 | Open order for result entry | Results | P2 | in progress | Lab open-order flow; AC-07 |
-| RES-02 | Show required tests on order | Results | P2 | in progress | Item list display |
-| RES-03 | Enter each result value | Results | P2 | in progress | AC-07 |
-| RES-04 | Enter / capture unit | Results | P2 | in progress | Unit persistence |
-| RES-05 | Save result as draft | Results | P2 | in progress | Draft not notified |
-| RES-06 | Validate result data | Results | P2 | in progress | Invalid input rejected |
-| RES-07 | Run critical value engine on save/submit | Results / Critical Engine | P2 | in progress | AC-08, AC-09 |
-| RES-08 | Add notes | Results | P2 | in progress | Notes field tests |
-| RES-09 | Upload attachments (PDF, images) | Attachments | P2 | in progress | Upload + MIME validation |
-| RES-10 | Approve / finalize result | Results / Review | P2 | in progress | AC-13 |
-| RES-11 | Audit who entered/modified/approved and when | Results / Audit | P2–P5 | in progress | Audit log assertions |
+| RES-01 | Open order for result entry | Results | P2 | verified | Lab open-order flow; AC-07 |
+| RES-02 | Show required tests on order | Results | P2 | verified | Item list display |
+| RES-03 | Enter each result value | Results | P2 | verified | AC-07 |
+| RES-04 | Enter / capture unit | Results | P2 | verified | Unit persistence |
+| RES-05 | Save result as draft | Results | P2 | verified | Draft not notified |
+| RES-06 | Validate result data | Results | P2 | verified | Invalid input rejected |
+| RES-07 | Run critical value engine on save/submit | Results / Critical Engine | P2 | verified | AC-08, AC-09 |
+| RES-08 | Add notes | Results | P2 | verified | Notes field tests |
+| RES-09 | Upload attachments (PDF, images) | Attachments | P2 | verified | Upload + MIME validation |
+| RES-10 | Approve / finalize result | Results / Review | P2 | verified | AC-13 |
+| RES-11 | Audit who entered/modified/approved and when | Results / Audit | P2–P5 | verified | Audit log assertions |
 
 ---
 
@@ -144,14 +144,14 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| CRT-01 | Accept result value | Critical Engine | P2 | in progress | Engine input contract tests |
-| CRT-02 | Load reference (normal) range for test | Critical Engine | P2 | in progress | Fixture range lookup |
-| CRT-03 | Load critical range for test | Critical Engine | P2 | in progress | Fixture critical lookup |
-| CRT-04 | Automatic comparison | Critical Engine | P2 | in progress | AC-08, AC-09 |
-| CRT-05 | Classify: Normal / Abnormal / Critical | Critical Engine | P2 | in progress | Classification matrix tests |
-| CRT-06 | Show color indicator | Critical Engine / UI | P2–P4 | in progress | UI visual QA |
-| CRT-07 | If Critical → create Critical Alert | Critical Engine | P2 | in progress | AC-09, AC-10 |
-| CRT-08 | Record discovery timestamp | Critical Engine | P2 | in progress | AC-12 |
+| CRT-01 | Accept result value | Critical Engine | P2 | verified | Engine input contract tests |
+| CRT-02 | Load reference (normal) range for test | Critical Engine | P2 | verified | Fixture range lookup |
+| CRT-03 | Load critical range for test | Critical Engine | P2 | verified | Fixture critical lookup |
+| CRT-04 | Automatic comparison | Critical Engine | P2 | verified | AC-08, AC-09 |
+| CRT-05 | Classify: Normal / Abnormal / Critical | Critical Engine | P2 | verified | Classification matrix tests |
+| CRT-06 | Show color indicator | Critical Engine / UI | P2–P4 | verified | UI visual QA |
+| CRT-07 | If Critical → create Critical Alert | Critical Engine | P2 | verified | AC-09, AC-10 |
+| CRT-08 | Record discovery timestamp | Critical Engine | P2 | verified | AC-12 |
 | CRT-09 | Notify doctor | Critical Engine / Notifications | P2–P3 | planning | AC-11 |
 | CRT-10 | Record notification send timestamp | Critical Engine / Notifications | P3 | planning | AC-12 |
 | CRT-11 | Include case on Critical Cases dashboard | Critical Engine / BI | P4 | planning | Dashboard presence |
@@ -163,10 +163,10 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| REV-01 | Pending Review stage before approval | Review | P2 | in progress | Workflow tests |
-| REV-02 | Approve result | Review | P2 | in progress | AC-13 |
-| REV-03 | Reject / return for correction | Review | P2 | in progress | Returned state tests |
-| REV-04 | “Smart audit” / programmatic checks before approval (source: التدقيق الذكي) | Review / Critical Engine | P2 | in progress | Block approval if unclassified / invalid |
+| REV-01 | Pending Review stage before approval | Review | P2 | verified | Workflow tests |
+| REV-02 | Approve result | Review | P2 | verified | AC-13 |
+| REV-03 | Reject / return for correction | Review | P2 | verified | Returned state tests |
+| REV-04 | “Smart audit” / programmatic checks before approval (source: التدقيق الذكي) | Review / Critical Engine | P2 | verified | Block approval if unclassified / invalid |
 | REV-05 | Who may approve results — **LOCKED:** Admin only via RBAC permission `results.approve` (not role-name checks); permission initially assigned only to Admin | Review / Governance | P0 (decision) / P2 (workflow UI) | decided | See D-008; P1 seeds permission only — approval UI/engine is P2 |
 
 ---
@@ -221,10 +221,10 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| ARC-01 | Patient file contains all orders, tests, results, PDFs, images, dates, doctor, lab, status | Archive | P2–P3 | in progress | Profile completeness QA; AC-18 |
-| ARC-02 | Auto-archive results after completion | Archive | P2–P3 | in progress | AC-18 |
-| ARC-03 | Patient profile sections/tabs: Profile, Test Orders, Results, Medical Laboratory History, Attachments, Critical Results, Reports | Patients / Portal | P2–P4 | in progress | Navigation QA |
-| ARC-04 | Store medical attachments (PDF/images) | Attachments | P2 | in progress | Upload/download ACL tests |
+| ARC-01 | Patient file contains all orders, tests, results, PDFs, images, dates, doctor, lab, status | Archive | P2–P3 | verified | Profile completeness QA; AC-18 |
+| ARC-02 | Auto-archive results after completion | Archive | P2–P3 | verified | AC-18 |
+| ARC-03 | Patient profile sections/tabs: Profile, Test Orders, Results, Medical Laboratory History, Attachments, Critical Results, Reports | Patients / Portal | P2–P4 | verified | Navigation QA |
+| ARC-04 | Store medical attachments (PDF/images) | Attachments | P2 | verified | Upload/download ACL tests |
 
 ---
 
@@ -254,8 +254,8 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| LAB-01 | Queues: new orders, awaiting sample, in analysis, needs review, critical, ready, deferred, rejected | Lab Portal | P2 | in progress | Queue fixture tests |
-| LAB-02 | Quick actions: receive sample, open order, enter result, upload attachment, approve/send to review, create PDF | Lab Portal | P2–P3 | in progress | Action permission + flow tests |
+| LAB-01 | Queues: new orders, awaiting sample, in analysis, needs review, critical, ready, deferred, rejected | Lab Portal | P2 | verified | Queue fixture tests |
+| LAB-02 | Quick actions: receive sample, open order, enter result, upload attachment, approve/send to review, create PDF | Lab Portal | P2–P3 | verified | Action permission + flow tests |
 
 ---
 
@@ -275,10 +275,10 @@
 |---|---|---|---|---|---|
 | PTP-01 | Register account or login via medical file number | Patient Portal / Auth | P1 | planning | Auth path tests |
 | PTP-02 | View own profile only | Patient Portal | P1 | planning | AC-02 |
-| PTP-03 | View results and old results | Patient Portal | P2–P3 | in progress | History ACL tests |
+| PTP-03 | View results and old results | Patient Portal | P2–P3 | verified | History ACL tests |
 | PTP-04 | Download PDF | Patient Portal | P3 | planning | Download ACL; AC-14 |
 | PTP-05 | Receive notifications | Patient Portal | P3 | planning | AC-17 |
-| PTP-06 | View test status | Patient Portal | P2 | in progress | Status visibility |
+| PTP-06 | View test status | Patient Portal | P2 | verified | Status visibility |
 | PTP-07 | Request interpretation or re-test from doctor (channel TBD: prefer structured request, not chat) | Patient Portal / Requests | P3–P4 | planning | Request create/list tests |
 
 ---
@@ -315,8 +315,8 @@ Every screen below is a requirement derived from source §35.
 | UI-A-13 | Reference/Critical Ranges | Catalog | P1 | approved | Screen QA |
 | UI-A-14 | Orders | Orders | P1 | approved | Screen QA |
 | UI-A-15 | Order Details | Orders | P1 | approved | Screen QA |
-| UI-A-16 | Results | Results | P2 | in progress | Screen QA |
-| UI-A-17 | Critical Results | Critical | P2–P4 | in progress | Screen QA |
+| UI-A-16 | Results | Results | P2 | verified | Screen QA |
+| UI-A-17 | Critical Results | Critical | P2–P4 | verified | Screen QA |
 | UI-A-18 | BI Dashboard | BI | P4 | planning | Screen QA |
 | UI-A-19 | Operational Reports | BI | P4 | planning | Screen QA |
 | UI-A-20 | Archived Reports | Archive | P3–P4 | planning | Screen QA |
@@ -328,15 +328,15 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| UI-L-01 | Laboratory Dashboard | Lab Portal | P2 | in progress | Screen QA |
+| UI-L-01 | Laboratory Dashboard | Lab Portal | P2 | verified | Screen QA |
 | UI-L-02 | New Orders | Lab Portal | P1–P2 | approved | Screen QA |
 | UI-L-03 | Order Details | Lab Portal | P1–P2 | approved | Screen QA |
 | UI-L-04 | Sample Reception | Samples | P1 | approved | Screen QA |
 | UI-L-05 | Samples | Samples | P1–P2 | approved | Screen QA |
-| UI-L-06 | Result Entry | Results | P2 | in progress | Screen QA |
-| UI-L-07 | Result Review | Review | P2 | in progress | Screen QA |
-| UI-L-08 | Critical Alerts | Critical | P2 | in progress | Screen QA |
-| UI-L-09 | Attachments | Attachments | P2 | in progress | Screen QA |
+| UI-L-06 | Result Entry | Results | P2 | verified | Screen QA |
+| UI-L-07 | Result Review | Review | P2 | verified | Screen QA |
+| UI-L-08 | Critical Alerts | Critical | P2 | verified | Screen QA |
+| UI-L-09 | Attachments | Attachments | P2 | verified | Screen QA |
 | UI-L-10 | Completed Tests | Results | P2 | planning | Screen QA |
 | UI-L-11 | Laboratory Reports | Reports | P3–P4 | planning | Screen QA |
 | UI-L-12 | Patient Search | Patients | P1 | planning | Screen QA |

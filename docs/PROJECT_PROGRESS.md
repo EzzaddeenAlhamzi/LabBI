@@ -1,7 +1,7 @@
 # LabBI — Project Progress Tracker
 
 **Purpose:** Permanent execution tracker for LabBI.  
-**Current phase:** Phase 2 — Laboratory Workflow (**in progress**)  
+**Current phase:** Phase 2 — Laboratory Workflow (**done pending user approval**)  
 **Rule:** Do not mark requirements implemented until coded and verified. Phase 3+ not started.
 
 ---
@@ -14,8 +14,8 @@
 | Repository | Laravel application + planning docs |
 | Phase 0 | **Approved** — decisions locked |
 | Phase 1 | **Approved** — merged to `main` via PR #2 |
-| Phase 2 | **In progress** — Results / Critical Engine / Review / Attachments / Portal UI |
-| Phase 3+ | **Not started** — STOP after Phase 2 |
+| Phase 2 | **Done pending user approval** — draft PR #3 |
+| Phase 3+ | **Not started** — STOP |
 | Implementation code | Branch `cursor/phase2-results-workflow-9aaf` |
 
 ---
@@ -26,7 +26,7 @@
 |---|---|---|
 | P0 | Discovery & planning documentation | `approved` |
 | P1 | Core platform | `approved` (PR #2 merged) |
-| P2 | Laboratory workflow | `in progress` |
+| P2 | Laboratory workflow | `done pending user approval` |
 | P3 | Communication & documents | `not started` |
 | P4 | Intelligence (BI/comparison/TAT) | `not started` |
 | P5 | Security & production | `not started` |
@@ -44,46 +44,27 @@
 
 ---
 
-## Phase 1 Task Tracker
-
-| Task | Status | Notes |
-|---|---|---|
-| Laravel + MySQL skeleton | done | Laravel 12 |
-| Auth + Arabic RTL shell | done | |
-| RBAC + 4 roles seed (no receptionist) | done | `results.approve` → Admin only |
-| Users / Doctors / Lab staff / Departments | done | |
-| Patients + unique Medical ID | done | |
-| Test catalog + reference/critical ranges UI | done | Not Critical Value Engine |
-| Orders + Doctor Create Order | done | |
-| Sample reception & matching | done | |
-| Audit instrumentation | done | create/login/sample receive etc. |
-| Automated + manual verification | done | AC-01…AC-06, AC-21, AC-24 |
-| Completion report | done | `docs/PHASE1_COMPLETION_REPORT.md` |
-| Merge to main | done | PR #2 |
-
----
-
 ## Phase 2 Task Tracker
 
 | Task | Status | Notes |
 |---|---|---|
-| Result entry (draft/edit/validate/audit) | in progress | |
-| Workflow state machine (backend-enforced) | in progress | |
-| Critical Value Engine (isolated, unit-tested) | in progress | Demo ranges test-only until CAT-04 |
-| Critical Alerts (in-system only) | in progress | No WhatsApp/email |
-| Review/Approval via `results.approve` | in progress | |
-| Attachments (PDF/images, ACL, audit) | in progress | No final lab PDF generator |
-| Lab / Doctor / Patient portal screens | in progress | |
-| Automated tests (P1 + P2) | pending | |
-| Completion + acceptance reports | pending | |
+| Result entry (draft/edit/validate/audit) | done | |
+| Workflow state machine (backend-enforced) | done | |
+| Critical Value Engine (isolated, unit-tested) | done | Demo ranges test-only until CAT-04 |
+| Critical Alerts (in-system only) | done | No WhatsApp/email |
+| Review/Approval via `results.approve` | done | |
+| Attachments (PDF/images, ACL, audit) | done | No final lab PDF generator |
+| Lab / Doctor / Patient portal screens | done | |
+| Automated tests (P1 + P2) | done | 47 passed |
+| Completion + acceptance reports | done | `docs/PHASE2_*` |
 
 ---
 
 ## Requirements Implementation Status (summary)
 
-- Phase 1 AC-01…AC-06, AC-21, AC-24: **approved** on `main`.  
-- Phase 2 AC-07…AC-13, AC-18 (partial): **in progress**.  
-- Phase 3+ (WhatsApp, Email, PDF reports, BI, analyzer, backup): **not started**.
+- Phase 1: **approved** on `main`.  
+- Phase 2 AC-07…AC-13 (+ AC-18 partial): **verified automated**; pending user approval.  
+- Phase 3+: **not started**.
 
 ---
 
@@ -103,5 +84,6 @@
 |---|---|
 | 2026-09-12 | Phase 0 planning docs created |
 | 2026-09-12 | Phase 0 approved; decisions locked; Phase 1 started |
-| 2026-09-12 | Phase 1 implementation + tests complete; pending user approval |
-| 2026-09-12 | Phase 1 PR #2 merged to `main`; Phase 1 **approved**; Phase 2 **in progress** |
+| 2026-09-12 | Phase 1 implementation + tests complete |
+| 2026-09-12 | Phase 1 PR #2 merged; Phase 1 approved; Phase 2 started |
+| 2026-09-12 | Phase 2 implementation + tests complete; draft PR #3; pending user approval; Phase 3 STOP |
