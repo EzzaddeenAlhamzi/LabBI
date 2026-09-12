@@ -197,6 +197,7 @@
                 <a href="{{ route('admin.tests.index') }}">دليل الفحوصات</a>
                 <a href="{{ route('admin.ranges.index') }}">المديات المرجعية والحرجة</a>
                 <a href="{{ route('admin.orders.index') }}">الطلبات</a>
+                <a href="{{ route('admin.deliveries.index') }}">التوصيل والتقارير</a>
             @endif
             @if($user->hasRole('lab_technician') || $user->hasRole('admin'))
                 <div class="section">المختبر</div>
@@ -218,16 +219,22 @@
                 <a href="{{ route('doctor.patients.index') }}">مرضاي</a>
                 <a href="{{ route('doctor.orders.create') }}">إنشاء طلب فحص</a>
                 <a href="{{ route('doctor.orders.index') }}">طلباتي</a>
-                <a href="{{ route('doctor.results.index') }}">النتائج</a>
+                <a href="{{ route('doctor.results.index') }}">النتائج المعتمدة</a>
                 <a href="{{ route('doctor.critical.index') }}">النتائج الحرجة</a>
+                <a href="{{ route('doctor.reports.index') }}">التقارير PDF</a>
+                <a href="{{ route('doctor.requests.index') }}">طلبات المرضى</a>
+                <a href="{{ route('notifications.index') }}">الإشعارات</a>
             @endif
             @if($user->hasRole('patient'))
                 <div class="section">المريض</div>
                 <a href="{{ route('patient.dashboard') }}">لوحتي</a>
-                <a href="{{ route('patient.tests.index') }}">فحوصاتي</a>
+                <a href="{{ route('patient.tests.index') }}">فحوصاتي / نتائجي</a>
+                <a href="{{ route('patient.requests.index') }}">طلباتي</a>
+                <a href="{{ route('notifications.index') }}">الإشعارات</a>
                 <a href="{{ route('patient.profile') }}">ملفي الطبي</a>
             @endif
             <div class="section">الحساب</div>
+            <a href="{{ route('notifications.index') }}">مركز التنبيهات</a>
             <a href="{{ route('profile') }}">الملف الشخصي</a>
         </nav>
     </aside>
@@ -238,6 +245,8 @@
                 <p class="muted" style="margin:0.25rem 0 0">@yield('subheading')</p>
             </div>
             <div class="actions">
+                @php($unreadCount = app(\App\Services\NotificationOrchestrator::class)->unreadCount($user))
+                <a class="badge" href="{{ route('notifications.index') }}" style="text-decoration:none">تنبيهات {{ $unreadCount > 0 ? '(' . $unreadCount . ')' : '' }}</a>
                 <span class="badge">{{ $user->name }}</span>
                 <form method="post" action="{{ route('logout') }}">@csrf<button class="btn btn-ghost" type="submit">تسجيل الخروج</button></form>
             </div>

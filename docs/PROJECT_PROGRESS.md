@@ -1,8 +1,8 @@
 # LabBI — Project Progress Tracker
 
 **Purpose:** Permanent execution tracker for LabBI.  
-**Current phase:** Phase 2 — Laboratory Workflow (**done pending user approval**)  
-**Rule:** Do not mark requirements implemented until coded and verified. Phase 3+ not started.
+**Current phase:** Phase 3 — Communication & Documents (**implementer-complete; pending A8/A9**)  
+**Rule:** Do not mark requirements implemented until coded and verified. Phase 4+ not started.
 
 ---
 
@@ -14,9 +14,10 @@
 | Repository | Laravel application + planning docs |
 | Phase 0 | **Approved** — decisions locked |
 | Phase 1 | **Approved** — merged to `main` via PR #2 |
-| Phase 2 | **Done pending user approval** — draft PR #3 |
-| Phase 3+ | **Not started** — STOP |
-| Implementation code | Branch `cursor/phase2-results-workflow-9aaf` |
+| Phase 2 | **Approved** — PRs #3/#4 merged; post-merge verification PR #5 merged |
+| Phase 3 | **In progress** — A5 Communications + A6 portal UI |
+| Phase 4+ | **Not started** — STOP until Phase 3 + A8/A9 gate |
+| Implementation code | Branch `cursor/phase3-communications-portal-c7d6` |
 
 ---
 
@@ -26,8 +27,8 @@
 |---|---|---|
 | P0 | Discovery & planning documentation | `approved` |
 | P1 | Core platform | `approved` (PR #2 merged) |
-| P2 | Laboratory workflow | `done pending user approval` |
-| P3 | Communication & documents | `not started` |
+| P2 | Laboratory workflow | `approved` (PRs #3/#4/#5) |
+| P3 | Communication & documents | `implementer-complete` (pending A8/A9) |
 | P4 | Intelligence (BI/comparison/TAT) | `not started` |
 | P5 | Security & production | `not started` |
 
@@ -41,40 +42,58 @@
 | REV-05 | Admin only via `results.approve` permission (never `if role == Admin`) |
 | GAP-05 | No Receptionist role in V1 |
 | GAP-07 / ANL-* | Future — manual entry V1; analyzer stub only |
+| D-010 | Structured Patient Request (not chat) |
+| D-011 | WhatsAppGateway interface + mock only (no vendor lock) |
+| D-016 | Minimal Arabic PDF stub until stakeholder template |
 
 ---
 
-## Phase 2 Task Tracker
+## Phase 3 Task Tracker
 
 | Task | Status | Notes |
 |---|---|---|
-| Result entry (draft/edit/validate/audit) | done | |
-| Workflow state machine (backend-enforced) | done | |
-| Critical Value Engine (isolated, unit-tested) | done | Demo ranges test-only until CAT-04 |
-| Critical Alerts (in-system only) | done | No WhatsApp/email |
-| Review/Approval via `results.approve` | done | |
-| Attachments (PDF/images, ACL, audit) | done | No final lab PDF generator |
-| Lab / Doctor / Patient portal screens | done | |
-| Automated tests (P1 + P2) | done | 47 passed |
-| Completion + acceptance reports | done | `docs/PHASE2_*` |
+| Central Notification Center + orchestration | done | Single `NotificationOrchestrator` |
+| Delivery rules (approved-only external) | done | Email/WA/PDF/patient readiness |
+| Doctor notifications after approval | done | In-app + email + PDF link |
+| Patient readiness + portal | done | Approved-only visibility |
+| Email (Mail + queues + logs) | done | Env-based; Mail::fake in tests |
+| WhatsAppGateway + mock provider | done | No Twilio/Meta/UltraMsg in domain |
+| PDF reports + archive | done | Private storage; Arabic RTL stub |
+| Patient structured requests | done | interpretation / re-test workflow |
+| Delivery tracking + idempotent jobs | done | Failures must not corrupt approval |
+| Arabic RTL portal UI (A6) | done | Notifications / results / reports / requests |
+| Automated tests (P1+P2+P3) | done | 65 passed / 333 assertions |
+| Completion + acceptance reports | done | `docs/PHASE3_*` |
 
 ---
 
 ## Requirements Implementation Status (summary)
 
 - Phase 1: **approved** on `main`.  
-- Phase 2 AC-07…AC-13 (+ AC-18 partial): **verified automated**; pending user approval.  
-- Phase 3+: **not started**.
+- Phase 2 AC-07…AC-13 (+ AC-18 partial): **approved** (post-merge verification).  
+- Phase 3 AC-14…AC-17 (+ AC-18 PDF/archive, AC-11/12 notify): **implementer verified**; A8/A9 gate remaining.  
+- Phase 4+: **not started**.
 
 ---
 
 ## Open Decision Gates (remaining)
 
-1. WhatsApp provider (P3)  
-2. PDF template (P3)  
+1. WhatsApp production provider (P3 mock only)  
+2. PDF polished template (P3 stub)  
 3. Hosting preference (P5)  
 4. Retention policy  
 5. CAT-04 medical catalog sign-off (before prod critical alerts)
+
+---
+
+## A8 / A9 handoff (do not skip)
+
+Before **READY FOR PHASE 4** verdict:
+
+- **A8:** Security/ops review of delivery secrets, PDF ACL, audit coverage  
+- **A9:** Black-box AC-14…AC-17 suite + regression on P1/P2  
+
+Test command: `php artisan test`
 
 ---
 
@@ -87,3 +106,6 @@
 | 2026-09-12 | Phase 1 implementation + tests complete |
 | 2026-09-12 | Phase 1 PR #2 merged; Phase 1 approved; Phase 2 started |
 | 2026-09-12 | Phase 2 implementation + tests complete; draft PR #3; pending user approval; Phase 3 STOP |
+| 2026-09-12 | Phase 2 approved (PR #5 post-merge); Phase 3 started on `cursor/phase3-communications-portal-c7d6` |
+
+| 2026-09-12 | Phase 3 A5/A6 implementer-complete; 65 tests; draft PR; A8/A9 required before Phase 4 |

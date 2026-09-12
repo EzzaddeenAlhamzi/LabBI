@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\LabStaffController;
@@ -16,6 +17,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Doctor\OrderController as DoctorOrderController;
 use App\Http\Controllers\Doctor\PatientController as DoctorPatientController;
+use App\Http\Controllers\Doctor\ReportController as DoctorReportController;
+use App\Http\Controllers\Doctor\RequestController as DoctorRequestController;
 use App\Http\Controllers\Doctor\ResultController as DoctorResultController;
 use App\Http\Controllers\Lab\AttachmentController as LabAttachmentController;
 use App\Http\Controllers\Lab\CompletedTestsController;
@@ -26,8 +29,11 @@ use App\Http\Controllers\Lab\PatientSearchController;
 use App\Http\Controllers\Lab\ResultEntryController;
 use App\Http\Controllers\Lab\ResultReviewController;
 use App\Http\Controllers\Lab\SampleController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Patient\MyTestsController;
 use App\Http\Controllers\Patient\PatientDashboardController;
+use App\Http\Controllers\Patient\RequestController as PatientRequestController;
+use App\Http\Controllers\ReportDownloadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('login'));
@@ -42,8 +48,23 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/profile', fn () => view('profile'))->name('profile');
 
+    Route::middleware('permission:notifications.view_self')->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read_all');
+    });
+
+    Route::get('/reports/{report}/download', ReportDownloadController::class)
+        ->middleware('permission:pdf.download_own,pdf.download_clinical,pdf.generate')
+        ->name('reports.download');
+
     Route::prefix('admin')->name('admin.')->middleware('permission:users.view,patients.view_all,catalog.manage,orders.view_all,bi.view')->group(function () {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
+
+        Route::get('/deliveries', [AdminDeliveryController::class, 'index'])
+            ->middleware('permission:audit.view,reports.operational,bi.view')
+            ->name('deliveries.index');
 
         Route::middleware('permission:users.view')->group(function () {
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -173,6 +194,15 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/critical', [DoctorResultController::class, 'critical'])
             ->middleware('permission:critical.view_own')
             ->name('critical.index');
+        Route::get('/reports', [DoctorReportController::class, 'index'])
+            ->middleware('permission:pdf.download_clinical')
+            ->name('reports.index');
+        Route::middleware('permission:requests.manage_doctor')->group(function () {
+            Route::get('/requests', [DoctorRequestController::class, 'index'])->name('requests.index');
+            Route::post('/requests/{patientRequest}/under-review', [DoctorRequestController::class, 'underReview'])->name('requests.under_review');
+            Route::post('/requests/{patientRequest}/resolve', [DoctorRequestController::class, 'resolve'])->name('requests.resolve');
+            Route::post('/requests/{patientRequest}/reject', [DoctorRequestController::class, 'reject'])->name('requests.reject');
+        });
     });
 
     Route::prefix('patient')->name('patient.')->middleware('permission:patients.view_self')->group(function () {
@@ -182,6 +212,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::middleware('permission:results.view_self,orders.view_self')->group(function () {
             Route::get('/tests', [MyTestsController::class, 'index'])->name('tests.index');
             Route::get('/results/{result}', [MyTestsController::class, 'show'])->name('results.show');
+        });
+        Route::middleware('permission:requests.view_own')->group(function () {
+            Route::get('/requests', [PatientRequestController::class, 'index'])->name('requests.index');
+            Route::post('/requests', [PatientRequestController::class, 'store'])
+                ->middleware('permission:requests.create')
+                ->name('requests.store');
         });
     });
 });

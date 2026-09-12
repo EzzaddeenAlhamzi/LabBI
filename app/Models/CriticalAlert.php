@@ -23,6 +23,8 @@ class CriticalAlert extends Model
         'unit',
         'threshold_snapshot',
         'discovered_at',
+        'notified_at',
+        'notification_status',
         'status',
         'acknowledged_at',
         'acknowledged_by',
@@ -34,6 +36,7 @@ class CriticalAlert extends Model
             'detected_value' => 'decimal:4',
             'threshold_snapshot' => 'array',
             'discovered_at' => 'datetime',
+            'notified_at' => 'datetime',
             'acknowledged_at' => 'datetime',
         ];
     }

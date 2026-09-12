@@ -12,6 +12,11 @@
 <h3>مرفقات</h3>
 <ul>@foreach($result->attachments as $a)<li>{{ $a->original_name }}</li>@endforeach</ul>
 @endif
+@if($report)
+<p class="actions" style="margin-top:1rem">
+    <a class="btn" href="{{ route('reports.download', $report) }}">تنزيل تقرير PDF</a>
+</p>
+@endif
 </div>
 <p><a href="{{ route('patient.tests.index') }}">العودة لفحوصاتي</a></p>
 @endsection
