@@ -201,9 +201,15 @@
             @if($user->hasRole('lab_technician') || $user->hasRole('admin'))
                 <div class="section">المختبر</div>
                 <a href="{{ route('lab.dashboard') }}">لوحة المختبر</a>
-                <a href="{{ route('lab.orders.index') }}">طلبات المختبر</a>
+                <a href="{{ route('lab.orders.index', ['status'=>'new']) }}">طلبات جديدة</a>
+                <a href="{{ route('lab.orders.index') }}">تفاصيل/كل الطلبات</a>
                 <a href="{{ route('lab.samples.reception') }}">استلام العينات</a>
                 <a href="{{ route('lab.samples.index') }}">العينات</a>
+                <a href="{{ route('lab.results.entry.index') }}">إدخال النتائج</a>
+                <a href="{{ route('lab.results.review.index') }}">مراجعة النتائج</a>
+                <a href="{{ route('lab.critical.index') }}">التنبيهات الحرجة</a>
+                <a href="{{ route('lab.attachments.index') }}">المرفقات</a>
+                <a href="{{ route('lab.completed.index') }}">الفحوصات المكتملة</a>
                 <a href="{{ route('lab.patients.search') }}">بحث المرضى</a>
             @endif
             @if($user->hasRole('doctor'))
@@ -212,10 +218,13 @@
                 <a href="{{ route('doctor.patients.index') }}">مرضاي</a>
                 <a href="{{ route('doctor.orders.create') }}">إنشاء طلب فحص</a>
                 <a href="{{ route('doctor.orders.index') }}">طلباتي</a>
+                <a href="{{ route('doctor.results.index') }}">النتائج</a>
+                <a href="{{ route('doctor.critical.index') }}">النتائج الحرجة</a>
             @endif
             @if($user->hasRole('patient'))
                 <div class="section">المريض</div>
                 <a href="{{ route('patient.dashboard') }}">لوحتي</a>
+                <a href="{{ route('patient.tests.index') }}">فحوصاتي</a>
                 <a href="{{ route('patient.profile') }}">ملفي الطبي</a>
             @endif
             <div class="section">الحساب</div>

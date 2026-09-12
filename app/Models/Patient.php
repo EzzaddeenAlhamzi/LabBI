@@ -48,4 +48,19 @@ class Patient extends Model
     {
         return $this->hasMany(Sample::class);
     }
+
+    public function results(): HasMany
+    {
+        return $this->hasMany(Result::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ResultAttachment::class);
+    }
+
+    public function criticalAlerts(): HasMany
+    {
+        return $this->hasMany(CriticalAlert::class);
+    }
 }

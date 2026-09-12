@@ -109,7 +109,7 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
-        LabTest::query()->firstOrCreate(
+        $glu = LabTest::query()->firstOrCreate(
             ['code' => 'GLU'],
             [
                 'name_ar' => 'السكر في الدم',
@@ -117,6 +117,17 @@ class DemoDataSeeder extends Seeder
                 'unit' => 'mg/dL',
                 'department_id' => $dept->id,
                 'is_active' => true,
+            ]
+        );
+
+        // DEMO / TEST-ONLY ranges until CAT-04 medical sign-off — not clinical authority.
+        TestReferenceRange::query()->firstOrCreate(
+            ['test_id' => $glu->id, 'is_active' => true],
+            [
+                'normal_low' => 70,
+                'normal_high' => 99,
+                'critical_low' => 40,
+                'critical_high' => 400,
             ]
         );
     }
