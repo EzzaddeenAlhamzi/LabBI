@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\CriticalAlert;
+use App\Models\GeneratedReport;
 use App\Models\Result;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,8 +18,8 @@ class ResultController extends Controller
 
         $results = Result::with(['patient', 'test', 'order'])
             ->whereHas('order', fn ($q) => $q->where('doctor_id', $doctor->id))
-            ->whereIn('status', [Result::STATUS_APPROVED, Result::STATUS_PENDING_REVIEW])
-            ->latest('updated_at')
+            ->where('status', Result::STATUS_APPROVED)
+            ->latest('approved_at')
             ->paginate(20);
 
         return view('doctor.results.index', compact('results'));
@@ -30,14 +31,17 @@ class ResultController extends Controller
         abort_unless($doctor, 403);
         abort_unless($result->order && $result->order->doctor_id === $doctor->id, 403);
 
-        // Doctors see approved results fully; pending review only as clinical awareness if critical path
-        if (! in_array($result->status, [Result::STATUS_APPROVED, Result::STATUS_PENDING_REVIEW], true)) {
+        if ($result->status !== Result::STATUS_APPROVED) {
             abort(403);
         }
 
         $result->load(['patient', 'test', 'order', 'criticalAlert', 'attachments', 'approvedBy']);
+        $report = GeneratedReport::query()
+            ->where('result_id', $result->id)
+            ->latest('id')
+            ->first();
 
-        return view('doctor.results.show', compact('result'));
+        return view('doctor.results.show', compact('result', 'report'));
     }
 
     public function critical(Request $request): View

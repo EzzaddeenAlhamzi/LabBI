@@ -207,6 +207,9 @@ class ResultEntryService
                 'detected_value' => $result->value_numeric,
                 'discovered_at' => $alert->discovered_at?->toIso8601String(),
             ]);
+
+            // In-app doctor notify only — no external email/WhatsApp until approval.
+            app(NotificationOrchestrator::class)->onCriticalDetected($alert->fresh());
         }
     }
 }

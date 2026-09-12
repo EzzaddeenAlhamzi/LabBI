@@ -6,6 +6,7 @@ use App\Contracts\ResultApprovalContract;
 use App\Domain\Critical\ResultClassification;
 use App\Domain\Workflow\OrderStatus;
 use App\Domain\Workflow\WorkflowTransitionService;
+use App\Jobs\ProcessResultApprovedJob;
 use App\Models\Result;
 use App\Models\ResultReview;
 use App\Models\TestOrder;
@@ -18,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * Review/approval gated solely by ResultApprovalContract (results.approve / results.return).
  * Never checks role names.
+ * Post-approval communications are dispatched via ProcessResultApprovedJob → NotificationOrchestrator.
  */
 class ResultReviewService
 {
@@ -69,7 +71,10 @@ class ResultReviewService
 
             $this->refreshOrderAfterReview($result->order()->first());
 
-            return $result->refresh();
+            $approved = $result->refresh();
+            ProcessResultApprovedJob::dispatch($approved->id, $reviewer->id);
+
+            return $approved;
         });
     }
 
@@ -170,10 +175,7 @@ class ResultReviewService
             $this->workflow->transition($order, OrderStatus::READY);
         }
 
-        $order->refresh();
-        if (OrderStatus::canTransition($order->status, OrderStatus::COMPLETED)) {
-            // Phase 2: no external delivery — mark completed when ready so patient/doctor can view
-            $this->workflow->transition($order, OrderStatus::COMPLETED);
-        }
+        // Phase 3: COMPLETED/ARCHIVED happen in NotificationOrchestrator after delivery kickoff.
+        // If not all items approved yet, leave order at pending_review/ready as appropriate.
     }
 }

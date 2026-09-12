@@ -2,7 +2,7 @@
 
 **Status values (post Phase 0):** `planning` | `not started` | `in progress` | `implemented` | `verified` | `approved` | `deferred` | `decided`  
 **Source:** `docs/source/labbi-requirements-extracted.md`  
-**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1 approved on main; Phase 2 in progress.
+**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–2 approved on main; Phase 3 implementer-complete pending A8/A9.
 
 ### Legend — Implementation phase
 
@@ -152,8 +152,8 @@
 | CRT-06 | Show color indicator | Critical Engine / UI | P2–P4 | verified | UI visual QA |
 | CRT-07 | If Critical → create Critical Alert | Critical Engine | P2 | verified | AC-09, AC-10 |
 | CRT-08 | Record discovery timestamp | Critical Engine | P2 | verified | AC-12 |
-| CRT-09 | Notify doctor | Critical Engine / Notifications | P2–P3 | planning | AC-11 |
-| CRT-10 | Record notification send timestamp | Critical Engine / Notifications | P3 | planning | AC-12 |
+| CRT-09 | Notify doctor | Critical Engine / Notifications | P2–P3 | verified | AC-11 |
+| CRT-10 | Record notification send timestamp | Critical Engine / Notifications | P3 | verified | AC-12 |
 | CRT-11 | Include case on Critical Cases dashboard | Critical Engine / BI | P4 | planning | Dashboard presence |
 | CRT-12 | Compute Turnaround Time (TAT) related metrics | Critical Engine / BI | P4 | planning | TAT calculation tests; AC-20 |
 
@@ -175,13 +175,13 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| NTF-01 | Central Notification Center | Notifications | P3 | planning | List/read APIs + UI |
-| NTF-02 | Notification fields: type, target user, patient, order, test, message, date, read status, channel, delivery status | Notifications | P3 | planning | Schema + API contract tests |
-| NTF-03 | In-system notifications | Notifications | P3 | planning | Bell/inbox UI tests |
-| NTF-04 | Email channel | Notifications / Email | P3 | planning | AC-16 |
-| NTF-05 | WhatsApp channel | Notifications / WhatsApp | P3 | planning | AC-17; delivery log |
-| NTF-06 | Doctor receives result after completion; critical receives immediate alert | Notifications | P3 | planning | AC-11, AC-15, AC-16 |
-| NTF-07 | Patient notified when result ready (incl. WhatsApp) | Notifications | P3 | planning | AC-17 |
+| NTF-01 | Central Notification Center | Notifications | P3 | verified | Feature Phase3 + UI |
+| NTF-02 | Notification fields: type, target user, patient, order, test, message, date, read status, channel, delivery status | Notifications | P3 | verified | Migration + Phase3 tests |
+| NTF-03 | In-system notifications | Notifications | P3 | verified | notifications.index/show tests |
+| NTF-04 | Email channel | Notifications / Email | P3 | verified | AC-16 |
+| NTF-05 | WhatsApp channel | Notifications / WhatsApp | P3 | verified | AC-17; delivery log |
+| NTF-06 | Doctor receives result after completion; critical receives immediate alert | Notifications | P3 | verified | AC-11, AC-15, AC-16 |
+| NTF-07 | Patient notified when result ready (incl. WhatsApp) | Notifications | P3 | verified | AC-17 |
 
 ---
 
@@ -189,9 +189,9 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| EML-01 | After approval, email doctor | Email | P3 | planning | AC-16 |
-| EML-02 | Include basic patient data, test name, report status | Email | P3 | planning | Email content assertions |
-| EML-03 | Attach PDF or secure link | Email / PDF | P3 | planning | Attachment/link tests |
+| EML-01 | After approval, email doctor | Email | P3 | verified | AC-16 |
+| EML-02 | Include basic patient data, test name, report status | Email | P3 | verified | Mail content + Mail::fake |
+| EML-03 | Attach PDF or secure link | Email / PDF | P3 | verified | Secure link in mail + download ACL |
 
 ---
 
@@ -199,10 +199,10 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| WA-01 | Integrate WhatsApp API (provider TBD — do not lock prematurely) | WhatsApp | P3 | planning | Adapter interface + provider spike |
-| WA-02 | Notify patient of result readiness | WhatsApp | P3 | planning | AC-17 |
-| WA-03 | Optionally send secure result link | WhatsApp | P3 | planning | Link auth tests |
-| WA-04 | Log Sent / Failed / DateTime | WhatsApp | P3 | planning | Delivery log assertions |
+| WA-01 | Integrate WhatsApp API (provider TBD — do not lock prematurely) | WhatsApp | P3 | verified | WhatsAppGateway + MockWhatsAppGateway |
+| WA-02 | Notify patient of result readiness | WhatsApp | P3 | verified | AC-17 |
+| WA-03 | Optionally send secure result link | WhatsApp | P3 | verified | Authenticated portal link |
+| WA-04 | Log Sent / Failed / DateTime | WhatsApp | P3 | verified | notification_deliveries tests |
 
 ---
 
@@ -210,9 +210,9 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| PDF-01 | Report generator for results | PDF | P3 | planning | AC-14 |
-| PDF-02 | Include patient, test, result, lab, issue date (per available data) | PDF | P3 | planning | Content checklist |
-| PDF-03 | Export and archive PDFs | PDF / Archive | P3 | planning | File stored + linked; AC-14, AC-18 |
+| PDF-01 | Report generator for results | PDF | P3 | verified | AC-14 |
+| PDF-02 | Include patient, test, result, lab, issue date (per available data) | PDF | P3 | verified | PDF blade fields |
+| PDF-03 | Export and archive PDFs | PDF / Archive | P3 | verified | File stored + linked; AC-14, AC-18 |
 | PDF-04 | Adopt approved template (logo, signature, QR, bilingual?) — **open** | PDF | P0–P3 | planning | Template sign-off |
 
 ---
@@ -265,7 +265,7 @@
 |---|---|---|---|---|---|
 | DOC-01 | Doctor dashboard: orders, create order, patients, new results, critical results, patient history, comparison, PDFs | Doctor Portal | P1–P4 | planning | Screen inventory QA |
 | DOC-02 | Account / login / receive results / comparison (source doctor minimum list) | Doctor Portal | P1–P4 | planning | Role smoke tests |
-| DOC-03 | Access completed results | Doctor Portal | P3 | planning | AC-15 |
+| DOC-03 | Access completed results | Doctor Portal | P3 | verified | AC-15 |
 
 ---
 
@@ -276,10 +276,10 @@
 | PTP-01 | Register account or login via medical file number | Patient Portal / Auth | P1 | planning | Auth path tests |
 | PTP-02 | View own profile only | Patient Portal | P1 | planning | AC-02 |
 | PTP-03 | View results and old results | Patient Portal | P2–P3 | verified | History ACL tests |
-| PTP-04 | Download PDF | Patient Portal | P3 | planning | Download ACL; AC-14 |
-| PTP-05 | Receive notifications | Patient Portal | P3 | planning | AC-17 |
+| PTP-04 | Download PDF | Patient Portal | P3 | verified | Download ACL; AC-14 |
+| PTP-05 | Receive notifications | Patient Portal | P3 | verified | AC-17 |
 | PTP-06 | View test status | Patient Portal | P2 | verified | Status visibility |
-| PTP-07 | Request interpretation or re-test from doctor (channel TBD: prefer structured request, not chat) | Patient Portal / Requests | P3–P4 | planning | Request create/list tests |
+| PTP-07 | Request interpretation or re-test from doctor (channel TBD: prefer structured request, not chat) | Patient Portal / Requests | P3–P4 | verified | Request create/list tests (P3) |
 
 ---
 
@@ -294,7 +294,7 @@ Every screen below is a requirement derived from source §35.
 | UI-G-01 | Login | Auth UI | P1 | approved | Visual + functional QA |
 | UI-G-02 | Unauthorized | Auth UI | P1 | approved | 403 page |
 | UI-G-03 | Profile | Users UI | P1 | approved | Profile edit smoke |
-| UI-G-04 | Notifications | Notifications UI | P3 | planning | Inbox smoke |
+| UI-G-04 | Notifications | Notifications UI | P3 | verified | Inbox smoke |
 
 ### Admin
 
@@ -319,7 +319,7 @@ Every screen below is a requirement derived from source §35.
 | UI-A-17 | Critical Results | Critical | P2–P4 | verified | Screen QA |
 | UI-A-18 | BI Dashboard | BI | P4 | planning | Screen QA |
 | UI-A-19 | Operational Reports | BI | P4 | planning | Screen QA |
-| UI-A-20 | Archived Reports | Archive | P3–P4 | planning | Screen QA |
+| UI-A-20 | Archived Reports | Archive | P3–P4 | verified | Screen QA (P3 archive/reports) |
 | UI-A-21 | Audit Logs | Audit | P5 | planning | Screen QA |
 | UI-A-22 | Backup Management | Backup | P5 | planning | Screen QA |
 | UI-A-23 | System Settings | Settings | P5 | planning | Screen QA |
@@ -350,11 +350,11 @@ Every screen below is a requirement derived from source §35.
 | UI-D-03 | Patient Profile | Doctor Portal | P1 | approved | Screen QA |
 | UI-D-04 | Create Test Order | Orders | P1 | approved | Screen QA |
 | UI-D-05 | Orders | Orders | P1 | approved | Screen QA |
-| UI-D-06 | Results | Results | P2–P3 | planning | Screen QA |
+| UI-D-06 | Results | Results | P2–P3 | verified | Screen QA |
 | UI-D-07 | Critical Results | Critical | P2–P3 | planning | Screen QA |
-| UI-D-08 | Result Details | Results | P2–P3 | planning | Screen QA |
+| UI-D-08 | Result Details | Results | P2–P3 | verified | Screen QA |
 | UI-D-09 | Historical Comparison | Comparison | P4 | planning | Screen QA |
-| UI-D-10 | Reports/PDF | PDF | P3 | planning | Screen QA |
+| UI-D-10 | Reports/PDF | PDF | P3 | verified | Screen QA |
 
 ### Patient
 
@@ -364,9 +364,9 @@ Every screen below is a requirement derived from source §35.
 | UI-P-02 | My Tests | Patient Portal | P2 | planning | Screen QA |
 | UI-P-03 | Result Details | Patient Portal | P2–P3 | planning | Screen QA |
 | UI-P-04 | My History | Patient Portal | P2–P4 | planning | Screen QA |
-| UI-P-05 | Download Report | PDF | P3 | planning | Screen QA |
-| UI-P-06 | Notifications | Notifications | P3 | planning | Screen QA |
-| UI-P-07 | Request Doctor Review/Re-test | Requests | P3–P4 | planning | Screen QA |
+| UI-P-05 | Download Report | PDF | P3 | verified | Screen QA |
+| UI-P-06 | Notifications | Notifications | P3 | verified | Screen QA |
+| UI-P-07 | Request Doctor Review/Re-test | Requests | P3–P4 | verified | Screen QA (P3 archive/reports) |
 
 ---
 
@@ -501,14 +501,14 @@ Every screen below is a requirement derived from source §35.
 | AC-08 | Normal result does not create Critical Alert | Critical Engine | P2 | planning | E2E |
 | AC-09 | Over critical limit → automatic detection | Critical Engine | P2 | planning | E2E |
 | AC-10 | Critical Alert appears immediately | Critical Engine | P2 | planning | E2E |
-| AC-11 | Doctor is notified | Notifications | P2–P3 | planning | E2E |
-| AC-12 | Discovery and notification timestamps recorded | Critical / Audit | P2–P3 | planning | Data assertions |
+| AC-11 | Doctor is notified | Notifications | P2–P3 | verified | Feature Phase3AcceptanceTest |
+| AC-12 | Discovery and notification timestamps recorded | Critical / Audit | P2–P3 | verified | Data assertions |
 | AC-13 | Result can be approved | Review | P2 | planning | E2E |
-| AC-14 | PDF can be generated | PDF | P3 | planning | E2E |
-| AC-15 | Doctor can access result | Doctor Portal | P3 | planning | E2E |
-| AC-16 | Email sent to doctor | Email | P3 | planning | E2E / mail trap |
-| AC-17 | Patient receives readiness notification | Notifications / WA | P3 | planning | E2E |
-| AC-18 | Exam archived | Archive | P2–P3 | planning | E2E |
+| AC-14 | PDF can be generated | PDF | P3 | verified | Feature Phase3AcceptanceTest |
+| AC-15 | Doctor can access result | Doctor Portal | P3 | verified | Feature Phase3AcceptanceTest |
+| AC-16 | Email sent to doctor | Email | P3 | verified | Feature Phase3AcceptanceTest / mail trap |
+| AC-17 | Patient receives readiness notification | Notifications / WA | P3 | verified | Feature Phase3AcceptanceTest |
+| AC-18 | Exam archived | Archive | P2–P3 | verified | Feature Phase3AcceptanceTest |
 | AC-19 | Doctor can compare new vs prior exam | Comparison | P4 | planning | E2E |
 | AC-20 | Manager sees test counts and completion times | BI | P4 | planning | E2E |
 | AC-21 | Permissions block unauthorized access | RBAC | P1 | verified | Feature test Phase1AcceptanceTest |

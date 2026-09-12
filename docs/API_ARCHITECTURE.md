@@ -1,6 +1,6 @@
 # LabBI — API Architecture
 
-**Status:** Phase 0 planning (not implemented)  
+**Status:** Phase 3 Blade portals implement notifications/PDF/requests; REST `/api/v1` map remains the target contract for future mobile (not required for P3 exit).  
 Source requires web UIs **and APIs** (نطاق المشروع), PHP backend, future mobile/analyzer readiness.
 
 ---

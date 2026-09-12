@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\Controller;
+use App\Models\GeneratedReport;
 use App\Models\Result;
 use App\Models\TestOrder;
 use Illuminate\Http\Request;
@@ -38,7 +39,11 @@ class MyTestsController extends Controller
         }
 
         $result->load(['test', 'order.doctor.user', 'attachments']);
+        $report = GeneratedReport::query()
+            ->where('result_id', $result->id)
+            ->latest('id')
+            ->first();
 
-        return view('patient.results.show', compact('result', 'patient'));
+        return view('patient.results.show', compact('result', 'patient', 'report'));
     }
 }

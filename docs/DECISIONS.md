@@ -115,8 +115,8 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ## D-011 — WhatsApp provider
 
-- **Status:** deferred (blocks P3 only)  
-- **Decision:** Define `WhatsAppSender` interface + mock; choose provider later  
+- **Status:** deferred for production provider; **interface implemented in P3**  
+- **Decision:** `App\Contracts\WhatsAppGateway` + `MockWhatsAppGateway` (no Twilio/Meta/UltraMsg in domain). Production provider still TBD.  
 - **Rationale:** Provider unspecified (GAP-06)  
 - **Open questions:** Which provider/account for production?  
 - **Reversible?** Yes if interface held
