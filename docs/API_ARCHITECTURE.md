@@ -98,6 +98,11 @@ Final auth mode depends on Blade vs SPA decision (`DECISIONS.md`).
 | POST | `/api/v1/results/{id}/pdf` | Generate PDF |
 | GET | `/api/v1/reports/{id}/download` | Secure download |
 
+**Phase 3 Blade equivalents (implemented):**  
+`GET /notifications`, `GET /notifications/{id}`, `POST /notifications/{id}/read`, `POST /notifications/read-all`,  
+`GET /reports/{report}/download`, doctor/patient/admin report & delivery screens.  
+Orchestration: `NotificationOrchestrator` + queued jobs (`GenerateResultPdfJob`, `DeliverEmailNotificationJob`, `DeliverWhatsAppNotificationJob`).
+
 ### Comparison & BI
 | Method | Path | Purpose |
 |---|---|---|
@@ -127,10 +132,11 @@ Final auth mode depends on Blade vs SPA decision (`DECISIONS.md`).
 PUT  /results/{id}            → save draft
 POST /results/{id}/submit     → validate
                               → CriticalEngine.classify()
-                              → if critical: create alert + enqueue doctor notify
-POST /results/{id}/approve    → workflow → ready/completed
-                              → enqueue PDF + doctor email + patient WhatsApp
-                              → archive hooks
+                              → if critical: create alert + in-app doctor notify (no external until approve)
+POST /results/{id}/approve    → workflow → ready
+                              → ProcessResultApprovedJob
+                              → PDF + doctor email + patient WhatsApp (approved only)
+                              → completed → archived
 ```
 
 ---

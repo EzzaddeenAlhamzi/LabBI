@@ -165,8 +165,8 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ## D-016 — PDF template
 
-- **Status:** deferred  
-- **Decision:** Block polished PDF on stakeholder template  
+- **Status:** deferred for polished template; **P3 stub shipped**  
+- **Decision:** Functional Arabic RTL DomPDF stub with reserved slots for logo/signature/QR/bilingual; polished template blocked on stakeholder assets (GAP-09)  
 - **Rationale:** GAP-09  
 - **Open questions:** Provide template assets  
 - **Reversible?** Template swap later OK
