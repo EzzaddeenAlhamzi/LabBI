@@ -110,6 +110,14 @@ Orchestration: `NotificationOrchestrator` + queued jobs (`GenerateResultPdfJob`,
 | GET | `/api/v1/bi/summary` | Dashboard cards |
 | GET | `/api/v1/bi/reports/*` | Operational reports |
 
+**Phase 4 Blade equivalents (implemented):**  
+`GET /admin/bi` (summary cards + TAT performance),  
+`GET /admin/reports/operational` (filtered ops report),  
+`GET /admin/critical-cases` (stored critical alerts dashboard),  
+`GET /doctor/comparison` (historical comparison + non-medical trend).  
+Authoritative services: `BIQueryService`, `OperationalReportService`, `HistoricalComparisonService`, `TATService`, `CriticalAnalyticsService`.  
+Filter contract: `App\Domain\Bi\BiReportFilters`.
+
 ### Patient requests
 | Method | Path | Purpose |
 |---|---|---|

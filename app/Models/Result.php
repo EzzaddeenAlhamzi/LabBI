@@ -34,6 +34,7 @@ class Result extends Model
         'notes',
         'entered_by',
         'entered_at',
+        'submitted_at',
         'updated_by',
         'approved_by',
         'approved_at',
@@ -46,6 +47,7 @@ class Result extends Model
         return [
             'value_numeric' => 'decimal:4',
             'entered_at' => 'datetime',
+            'submitted_at' => 'datetime',
             'approved_at' => 'datetime',
             'range_snapshot' => 'array',
         ];

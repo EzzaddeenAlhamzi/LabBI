@@ -213,6 +213,20 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ---
 
+## D-021 — Phase 4 TAT timestamps & trend policy
+
+- **Status:** accepted  
+- **Decision:**  
+  - TAT uses real columns only: `ordered_at`, `samples.received_at`, `analysis_started_at`, `results.submitted_at`/`entered_at`, `results.approved_at`, `completed_at`, `critical_alerts.discovered_at`/`notified_at`/`acknowledged_at`.  
+  - Missing timestamps report limitations — never invent.  
+  - Critical dashboard consumes stored Phase 2 `critical_alerts` only (no CriticalValueEngine duplication).  
+  - Trends are Rising/Falling/Stable with 5% relative threshold; incompatible units → safe non-trend; language is non-diagnostic.  
+- **Rationale:** Align BI with actual schema (`discovered_at` not `detected_at`); AC-19/AC-20; BI-05  
+- **Open questions:** Stakeholder confirmation of 5% stable threshold  
+- **Reversible?** Formula threshold yes; column names locked to schema
+
+---
+
 ## Locked summary (Phase 1 gate)
 
 | Topic | Lock |

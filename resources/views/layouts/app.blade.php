@@ -198,6 +198,9 @@
                 <a href="{{ route('admin.ranges.index') }}">المديات المرجعية والحرجة</a>
                 <a href="{{ route('admin.orders.index') }}">الطلبات</a>
                 <a href="{{ route('admin.deliveries.index') }}">التوصيل والتقارير</a>
+                <a href="{{ route('admin.bi.index') }}">لوحة ذكاء الأعمال</a>
+                <a href="{{ route('admin.reports.operational') }}">التقارير التشغيلية</a>
+                <a href="{{ route('admin.critical-cases.index') }}">لوحة الحالات الحرجة</a>
             @endif
             @if($user->hasRole('lab_technician') || $user->hasRole('admin'))
                 <div class="section">المختبر</div>
@@ -220,6 +223,7 @@
                 <a href="{{ route('doctor.orders.create') }}">إنشاء طلب فحص</a>
                 <a href="{{ route('doctor.orders.index') }}">طلباتي</a>
                 <a href="{{ route('doctor.results.index') }}">النتائج المعتمدة</a>
+                <a href="{{ route('doctor.comparison.index') }}">المقارنة التاريخية</a>
                 <a href="{{ route('doctor.critical.index') }}">النتائج الحرجة</a>
                 <a href="{{ route('doctor.reports.index') }}">التقارير PDF</a>
                 <a href="{{ route('doctor.requests.index') }}">طلبات المرضى</a>

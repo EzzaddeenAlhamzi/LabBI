@@ -15,7 +15,9 @@ class TestOrder extends Model
         'department_id',
         'status',
         'ordered_at',
+        'analysis_started_at',
         'archived_at',
+        'completed_at',
         'created_by',
         'notes',
     ];
@@ -24,7 +26,9 @@ class TestOrder extends Model
     {
         return [
             'ordered_at' => 'datetime',
+            'analysis_started_at' => 'datetime',
             'archived_at' => 'datetime',
+            'completed_at' => 'datetime',
         ];
     }
 

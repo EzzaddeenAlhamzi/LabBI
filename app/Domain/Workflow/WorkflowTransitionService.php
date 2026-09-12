@@ -20,8 +20,20 @@ final class WorkflowTransitionService
         }
 
         $order->status = $to;
+        if ($to === OrderStatus::IN_ANALYSIS) {
+            $order->analysis_started_at = $order->analysis_started_at ?? now();
+        }
+        if ($to === OrderStatus::COMPLETED || $to === OrderStatus::READY) {
+            // Stamp completion when order first becomes ready/completed (TAT end).
+            if ($to === OrderStatus::COMPLETED) {
+                $order->completed_at = $order->completed_at ?? now();
+            } elseif ($to === OrderStatus::READY && $order->completed_at === null) {
+                // Ready is operationally "done for delivery"; keep completed_at for COMPLETED transition.
+            }
+        }
         if ($to === OrderStatus::ARCHIVED) {
             $order->archived_at = $order->archived_at ?? now();
+            $order->completed_at = $order->completed_at ?? now();
         }
         if ($reason !== null && $reason !== '') {
             $order->notes = trim(($order->notes ? $order->notes."\n" : '').$reason);

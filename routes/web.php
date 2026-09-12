@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\BiDashboardController;
+use App\Http\Controllers\Admin\CriticalCasesController;
 use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\LabStaffController;
+use App\Http\Controllers\Admin\OperationalReportController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PatientController as AdminPatientController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -14,6 +17,7 @@ use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Doctor\ComparisonController as DoctorComparisonController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Doctor\OrderController as DoctorOrderController;
 use App\Http\Controllers\Doctor\PatientController as DoctorPatientController;
@@ -65,6 +69,18 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/deliveries', [AdminDeliveryController::class, 'index'])
             ->middleware('permission:audit.view,reports.operational,bi.view')
             ->name('deliveries.index');
+
+        Route::get('/bi', BiDashboardController::class)
+            ->middleware('permission:bi.view')
+            ->name('bi.index');
+
+        Route::get('/reports/operational', [OperationalReportController::class, 'index'])
+            ->middleware('permission:reports.operational,bi.view')
+            ->name('reports.operational');
+
+        Route::get('/critical-cases', [CriticalCasesController::class, 'index'])
+            ->middleware('permission:bi.view,critical.view_all')
+            ->name('critical-cases.index');
 
         Route::middleware('permission:users.view')->group(function () {
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -197,6 +213,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/reports', [DoctorReportController::class, 'index'])
             ->middleware('permission:pdf.download_clinical')
             ->name('reports.index');
+        Route::get('/comparison', [DoctorComparisonController::class, 'index'])
+            ->middleware('permission:comparison.use')
+            ->name('comparison.index');
         Route::middleware('permission:requests.manage_doctor')->group(function () {
             Route::get('/requests', [DoctorRequestController::class, 'index'])->name('requests.index');
             Route::post('/requests/{patientRequest}/under-review', [DoctorRequestController::class, 'underReview'])->name('requests.under_review');

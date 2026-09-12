@@ -1,8 +1,8 @@
 # LabBI — Project Progress Tracker
 
 **Purpose:** Permanent execution tracker for LabBI.  
-**Current phase:** Phase 3 — Communication & Documents (**implementer-complete; pending A8/A9**)  
-**Rule:** Do not mark requirements implemented until coded and verified. Phase 4+ not started.
+**Current phase:** Phase 4 — Intelligence (BI / comparison / TAT) (**implementer-complete; pending A8/A9**)  
+**Rule:** Do not mark requirements implemented until coded and verified. Phase 5 not started.
 
 ---
 
@@ -15,9 +15,10 @@
 | Phase 0 | **Approved** — decisions locked |
 | Phase 1 | **Approved** — merged to `main` via PR #2 |
 | Phase 2 | **Approved** — PRs #3/#4 merged; post-merge verification PR #5 merged |
-| Phase 3 | **In progress** — A5 Communications + A6 portal UI |
-| Phase 4+ | **Not started** — STOP until Phase 3 + A8/A9 gate |
-| Implementation code | Branch `cursor/phase3-communications-portal-c7d6` |
+| Phase 3 | **Approved** — PR #6 merged; post-merge verification PR #8 merged |
+| Phase 4 | **Implementer-complete** — A7 BI & Reporting + A6 Phase 4 BI UI; A8/A9 required |
+| Phase 5 | **Not started** — STOP until Phase 4 + A8/A9 gate |
+| Implementation code | Branch `cursor/phase4-bi-reporting-b1f0` |
 
 ---
 
@@ -28,8 +29,8 @@
 | P0 | Discovery & planning documentation | `approved` |
 | P1 | Core platform | `approved` (PR #2 merged) |
 | P2 | Laboratory workflow | `approved` (PRs #3/#4/#5) |
-| P3 | Communication & documents | `implementer-complete` (pending A8/A9) |
-| P4 | Intelligence (BI/comparison/TAT) | `not started` |
+| P3 | Communication & documents | `approved` (PRs #6/#8) |
+| P4 | Intelligence (BI/comparison/TAT) | `implementer-complete` (pending A8/A9) |
 | P5 | Security & production | `not started` |
 
 ---
@@ -67,12 +68,31 @@
 
 ---
 
+## Phase 4 Task Tracker
+
+| Task | Status | Notes |
+|---|---|---|
+| Shared BI contracts + filter DTO | done | `BiReportFilters`, `BiTrend`, `TrendCalculator` |
+| BIQueryService (admin cards + performance) | done | No static placeholders |
+| OperationalReportService | done | Server-side filters |
+| HistoricalComparisonService + trends | done | Approved results only; doctor ACL |
+| TATService | done | Real timestamps only; documented formulas |
+| CriticalAnalyticsService | done | Consumes Phase 2 alerts only |
+| Admin BI / Operational / Critical UI (RTL) | done | A6 screens |
+| Doctor Historical Comparison UI (RTL) | done | A6 screen |
+| Index / timestamp migration (single set) | done | `2026_09_12_400000_create_phase4_bi_indexes.php` |
+| Automated tests (P1–P4) | done | **89 passed / 489 assertions** |
+| Completion + acceptance reports | done | `docs/PHASE4_*` |
+
+---
+
 ## Requirements Implementation Status (summary)
 
 - Phase 1: **approved** on `main`.  
 - Phase 2 AC-07…AC-13 (+ AC-18 partial): **approved** (post-merge verification).  
-- Phase 3 AC-14…AC-17 (+ AC-18 PDF/archive, AC-11/12 notify): **implementer verified**; A8/A9 gate remaining.  
-- Phase 4+: **not started**.
+- Phase 3 AC-14…AC-17 (+ AC-18 PDF/archive, AC-11/12 notify): **approved** (PR #8 post-merge).  
+- Phase 4 AC-19 / AC-20 (+ CMP-*, BI-*, CRT-11/12): **implementer verified**; A8/A9 gate remaining.  
+- Phase 5: **not started**.
 
 ---
 
@@ -88,10 +108,10 @@
 
 ## A8 / A9 handoff (do not skip)
 
-Before **READY FOR PHASE 4** verdict:
+Before any consolidated Phase 5 readiness claim:
 
-- **A8:** Security/ops review of delivery secrets, PDF ACL, audit coverage  
-- **A9:** Black-box AC-14…AC-17 suite + regression on P1/P2  
+- **A8:** Security/ops review of BI ACL, comparison isolation, report filters  
+- **A9:** Black-box AC-19…AC-20 suite + full P1–P4 regression  
 
 Test command: `php artisan test`
 
@@ -107,5 +127,6 @@ Test command: `php artisan test`
 | 2026-09-12 | Phase 1 PR #2 merged; Phase 1 approved; Phase 2 started |
 | 2026-09-12 | Phase 2 implementation + tests complete; draft PR #3; pending user approval; Phase 3 STOP |
 | 2026-09-12 | Phase 2 approved (PR #5 post-merge); Phase 3 started on `cursor/phase3-communications-portal-c7d6` |
-
-| 2026-09-12 | Phase 3 A5/A6 implementer-complete; 65 tests; draft PR; A8/A9 required before Phase 4 |
+| 2026-09-12 | Phase 3 A5/A6 implementer-complete; draft PR; A8/A9 then post-merge PR #8 |
+| 2026-09-12 | Phase 3 approved (PR #8); Phase 4 started on `cursor/phase4-bi-reporting-b1f0` |
+| 2026-09-12 | Phase 4 A7/A6 implementer-complete; 89 tests; draft PR; A8/A9 required before Phase 5 |

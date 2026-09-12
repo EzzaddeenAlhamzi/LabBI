@@ -109,6 +109,7 @@ class ResultEntryService
                 }
                 if ($submit) {
                     $existing->status = Result::STATUS_PENDING_REVIEW;
+                    $existing->submitted_at = $existing->submitted_at ?? now();
                 } elseif ($existing->status === Result::STATUS_RETURNED) {
                     $existing->status = Result::STATUS_DRAFT;
                 } else {
@@ -127,6 +128,9 @@ class ResultEntryService
                 $payload['entered_by'] = $actor->id;
                 $payload['entered_at'] = now();
                 $payload['status'] = $submit ? Result::STATUS_PENDING_REVIEW : Result::STATUS_DRAFT;
+                if ($submit) {
+                    $payload['submitted_at'] = now();
+                }
                 $result = Result::query()->create($payload);
                 $this->audit->log(
                     $submit ? 'results.submitted' : 'results.entered',
@@ -151,6 +155,7 @@ class ResultEntryService
     private function ensureAnalysisState(TestOrder $order): void
     {
         if ($order->status === OrderStatus::SAMPLE_RECEIVED) {
+            // Stamps analysis_started_at via WorkflowTransitionService.
             $this->workflow->transition($order, OrderStatus::IN_ANALYSIS);
         } elseif (! in_array($order->status, [
             OrderStatus::IN_ANALYSIS,
