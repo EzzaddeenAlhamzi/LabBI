@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Patient extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'user_id',
+        'medical_file_number',
+        'full_name',
+        'date_of_birth',
+        'sex',
+        'phone',
+        'national_id',
+        'primary_doctor_id',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'date_of_birth' => 'date',
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function primaryDoctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class, 'primary_doctor_id');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(TestOrder::class);
+    }
+
+    public function samples(): HasMany
+    {
+        return $this->hasMany(Sample::class);
+    }
+}

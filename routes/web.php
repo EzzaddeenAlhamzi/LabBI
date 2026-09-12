@@ -1,0 +1,129 @@
+<?php
+
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\DepartmentController;
+use App\Http\Controllers\Admin\DoctorController;
+use App\Http\Controllers\Admin\LabStaffController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PatientController as AdminPatientController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RangeController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\TestController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Doctor\DoctorDashboardController;
+use App\Http\Controllers\Doctor\OrderController as DoctorOrderController;
+use App\Http\Controllers\Doctor\PatientController as DoctorPatientController;
+use App\Http\Controllers\Lab\LabDashboardController;
+use App\Http\Controllers\Lab\OrderController as LabOrderController;
+use App\Http\Controllers\Lab\PatientSearchController;
+use App\Http\Controllers\Lab\SampleController;
+use App\Http\Controllers\Patient\PatientDashboardController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', fn () => redirect()->route('login'));
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+});
+
+Route::middleware(['auth', 'active'])->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/profile', fn () => view('profile'))->name('profile');
+
+    Route::prefix('admin')->name('admin.')->middleware('permission:users.view,patients.view_all,catalog.manage,orders.view_all,bi.view')->group(function () {
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
+
+        Route::middleware('permission:users.view')->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::get('/users/create', [UserController::class, 'create'])->middleware('permission:users.create')->name('users.create');
+            Route::post('/users', [UserController::class, 'store'])->middleware('permission:users.create')->name('users.store');
+            Route::get('/users/{user}/edit', [UserController::class, 'edit'])->middleware('permission:users.update')->name('users.edit');
+            Route::put('/users/{user}', [UserController::class, 'update'])->middleware('permission:users.update')->name('users.update');
+            Route::post('/users/{user}/toggle', [UserController::class, 'toggle'])->middleware('permission:users.activate')->name('users.toggle');
+        });
+
+        Route::middleware('permission:roles.manage')->group(function () {
+            Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+            Route::get('/roles/{role}', [RoleController::class, 'show'])->name('roles.show');
+        });
+
+        Route::get('/permissions', [PermissionController::class, 'index'])->middleware('permission:permissions.manage')->name('permissions.index');
+
+        Route::middleware('permission:patients.view_all')->group(function () {
+            Route::get('/patients', [AdminPatientController::class, 'index'])->name('patients.index');
+            Route::get('/patients/create', [AdminPatientController::class, 'create'])->middleware('permission:patients.create')->name('patients.create');
+            Route::post('/patients', [AdminPatientController::class, 'store'])->middleware('permission:patients.create')->name('patients.store');
+            Route::get('/patients/{patient}', [AdminPatientController::class, 'show'])->name('patients.show');
+            Route::get('/patients/{patient}/edit', [AdminPatientController::class, 'edit'])->middleware('permission:patients.update')->name('patients.edit');
+            Route::put('/patients/{patient}', [AdminPatientController::class, 'update'])->middleware('permission:patients.update')->name('patients.update');
+        });
+
+        Route::middleware('permission:doctors.manage')->group(function () {
+            Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
+            Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
+            Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
+        });
+
+        Route::middleware('permission:lab_staff.manage')->group(function () {
+            Route::get('/lab-staff', [LabStaffController::class, 'index'])->name('lab-staff.index');
+            Route::get('/lab-staff/create', [LabStaffController::class, 'create'])->name('lab-staff.create');
+            Route::post('/lab-staff', [LabStaffController::class, 'store'])->name('lab-staff.store');
+        });
+
+        Route::middleware('permission:departments.manage')->group(function () {
+            Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+            Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
+        });
+
+        Route::middleware('permission:catalog.view,catalog.manage')->group(function () {
+            Route::get('/tests', [TestController::class, 'index'])->name('tests.index');
+            Route::get('/tests/create', [TestController::class, 'create'])->middleware('permission:catalog.manage')->name('tests.create');
+            Route::post('/tests', [TestController::class, 'store'])->middleware('permission:catalog.manage')->name('tests.store');
+            Route::get('/tests/{test}', [TestController::class, 'show'])->name('tests.show');
+        });
+
+        Route::middleware('permission:ranges.manage')->group(function () {
+            Route::get('/ranges', [RangeController::class, 'index'])->name('ranges.index');
+            Route::post('/ranges', [RangeController::class, 'store'])->name('ranges.store');
+        });
+
+        Route::middleware('permission:orders.view_all')->group(function () {
+            Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+            Route::get('/orders/create', [AdminOrderController::class, 'create'])->middleware('permission:orders.create')->name('orders.create');
+            Route::post('/orders', [AdminOrderController::class, 'store'])->middleware('permission:orders.create')->name('orders.store');
+            Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        });
+    });
+
+    Route::prefix('lab')->name('lab.')->middleware('permission:orders.view_lab,samples.receive')->group(function () {
+        Route::get('/', LabDashboardController::class)->name('dashboard');
+        Route::get('/orders', [LabOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [LabOrderController::class, 'show'])->name('orders.show');
+        Route::get('/samples', [SampleController::class, 'index'])->name('samples.index');
+        Route::get('/samples/reception', [SampleController::class, 'reception'])->middleware('permission:samples.receive')->name('samples.reception');
+        Route::post('/samples/receive', [SampleController::class, 'receive'])->middleware('permission:samples.receive')->name('samples.receive');
+        Route::post('/samples/{sample}/reject', [SampleController::class, 'reject'])->middleware('permission:samples.reject')->name('samples.reject');
+        Route::get('/patients/search', PatientSearchController::class)->name('patients.search');
+    });
+
+    Route::prefix('doctor')->name('doctor.')->middleware('permission:orders.view_own_doctor,orders.create')->group(function () {
+        Route::get('/', DoctorDashboardController::class)->name('dashboard');
+        Route::get('/patients', [DoctorPatientController::class, 'index'])->name('patients.index');
+        Route::get('/patients/{patient}', [DoctorPatientController::class, 'show'])->name('patients.show');
+        Route::get('/orders', [DoctorOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/create', [DoctorOrderController::class, 'create'])->middleware('permission:orders.create')->name('orders.create');
+        Route::post('/orders', [DoctorOrderController::class, 'store'])->middleware('permission:orders.create')->name('orders.store');
+        Route::get('/orders/{order}', [DoctorOrderController::class, 'show'])->name('orders.show');
+    });
+
+    Route::prefix('patient')->name('patient.')->middleware('permission:patients.view_self')->group(function () {
+        Route::get('/', [PatientDashboardController::class, '__invoke'])->name('dashboard');
+        Route::get('/profile', [PatientDashboardController::class, 'profile'])->name('profile');
+        Route::get('/records/{patient}', [PatientDashboardController::class, 'show'])->name('records.show');
+    });
+});
