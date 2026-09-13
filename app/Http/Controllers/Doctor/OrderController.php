@@ -8,6 +8,7 @@ use App\Models\Patient;
 use App\Models\TestOrder;
 use App\Models\TestOrderItem;
 use App\Services\AuditLogger;
+use App\Services\DoctorPatientAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function store(Request $request, AuditLogger $audit): RedirectResponse
+    public function store(Request $request, AuditLogger $audit, DoctorPatientAccess $access): RedirectResponse
     {
         $doctor = $request->user()->doctor;
         abort_unless($doctor, 403);
@@ -58,13 +59,8 @@ class OrderController extends Controller
         ]);
 
         $patient = Patient::findOrFail($data['patient_id']);
-        $allowed = $patient->primary_doctor_id === $doctor->id
-            || $patient->orders()->where('doctor_id', $doctor->id)->exists();
-        abort_unless($allowed || $patient->primary_doctor_id === null, 403);
-
-        if ($patient->primary_doctor_id === null) {
-            $patient->update(['primary_doctor_id' => $doctor->id]);
-        }
+        // No open claim: unassigned patients require Admin primary_doctor assignment first.
+        $access->assertCanAccess($doctor, $patient);
 
         $order = DB::transaction(function () use ($data, $request, $doctor) {
             $order = TestOrder::create([

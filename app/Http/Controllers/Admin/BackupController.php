@@ -63,7 +63,9 @@ class BackupController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return back()->withErrors(['restore' => 'فشلت الاستعادة: '.$e->getMessage()]);
+            return back()->withErrors([
+                'restore' => 'فشلت عملية الاستعادة. لم تُعرض تفاصيل تقنية. راجع سجلات النظام.',
+            ]);
         }
     }
 }

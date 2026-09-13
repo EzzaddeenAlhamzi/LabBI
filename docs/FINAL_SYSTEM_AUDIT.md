@@ -75,13 +75,31 @@ A9 route absence test covers common out-of-scope paths.
 
 ## 8. Open gates before PRODUCTION READY
 
-1. Independent **A8** security re-cert (coordinator)  
-2. WhatsApp production provider decision  
-3. PDF template polish  
-4. CAT-04 medical catalog sign-off  
-5. Retention policy (GAP-10)  
-6. Edge/Safari if those are contractual target browsers  
-7. Hosting preference confirmation  
+1. Independent **A8** security re-cert after pre-production Medium closure (M1–M5) — target Critical/High/Medium = 0  
+2. Independent **A9** final QA re-run  
+3. WhatsApp production provider decision  
+4. PDF template polish  
+5. **CAT-04** medical catalog sign-off (clinical gate — still open)  
+6. Retention policy (GAP-10)  
+7. Edge/Safari if those are contractual target browsers  
+8. Hosting preference confirmation  
+
+---
+
+## 8b. Pre-production security closure (implementer)
+
+Branch `cursor/pre-production-security-closure-9285` closes A8 Mediums:
+
+| ID | Closure |
+|---|---|
+| M1 | Reject only from `pending_review` |
+| M2 | Doctor cannot claim unassigned patients (explicit ACL) |
+| M3 | Role-change audit with old/new roles + permissions |
+| M4 | Env-driven `TRUSTED_PROXIES` (default: trust none) |
+| M5 | Restore UI safe Arabic errors |
+
+Details: `PRE_PRODUCTION_SECURITY_CLOSURE.md`.  
+**Not** a PRODUCTION READY claim. A8/A9 must re-review.
 
 ---
 
@@ -89,7 +107,7 @@ A9 route absence test covers common out-of-scope paths.
 
 ```text
 php artisan test
-# Tests: 119 passed (756 assertions)
+# Tests: 125 passed (815 assertions)
 # Failures: 0 | Skipped: 0
 ```
 
@@ -97,8 +115,9 @@ Ops:
 
 ```text
 php artisan schedule:list   # daily labbi:backup @ 02:15
-php artisan labbi:restore-drill --force  # RESTORE DRILL PASSED
+php artisan labbi:restore-drill --force  # RESTORE DRILL (staging)
 curl /health → status=ok, checks.database=ok
+php artisan test --filter=PreProductionSecurityClosureTest
 ```
 
 Screenshots: store `media/phase5-qa-*.png`

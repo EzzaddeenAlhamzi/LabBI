@@ -10,6 +10,12 @@ return [
 
     'force_https' => (bool) env('FORCE_HTTPS', false),
 
+    /*
+    | Comma-separated proxy IPs/CIDRs, or "*" only when PHP is unreachable except via the edge.
+    | Empty/unset = do not trust X-Forwarded-* (safer default; prevents spoofed client IP / HTTPS).
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     'backup' => [
         'disk' => env('BACKUP_DISK', 'local'),
         'schedule' => env('BACKUP_SCHEDULE', 'daily'),

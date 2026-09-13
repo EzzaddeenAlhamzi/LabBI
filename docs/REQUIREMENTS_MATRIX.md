@@ -386,7 +386,7 @@ Every screen below is a requirement derived from source §35.
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
 | AUD-01 | Persist user, action, table/record, old value, new value, time, IP when needed | Audit | P5 (instrument from P1) | verified | A9 Audit UI + Phase5AcceptanceTest |
-| AUD-02 | Must log: patient create/edit; order create; sample receive; result enter/edit/approve; critical discovery; alert send; report view; permission changes | Audit | P1–P5 | verified | Coverage via P1–P5 tests + A9 E2E audit trail |
+| AUD-02 | Must log: patient create/edit; order create; sample receive; result enter/edit/approve; critical discovery; alert send; report view; permission changes | Audit | P1–P5 | verified | Coverage via P1–P5 tests + A9 E2E; pre-prod M3 adds `users.role_change` old/new roles+permissions |
 
 ---
 
@@ -399,10 +399,10 @@ Every screen below is a requirement derived from source §35.
 | NFR-PERF-03 | Process orders without delay | Platform | P1–P2 | planning | Load smoke |
 | NFR-PERF-04 | Send alerts without delay | Notifications | P3 | planning | Queue latency observation |
 | NFR-PERF-05 | Generate BI reports quickly | BI | P4 | planning | Report timing smoke |
-| NFR-SEC-01 | Encrypt data in transit | Security | P5 | implemented | PARTIAL — FORCE_HTTPS + headers; TLS at reverse proxy (A9) |
+| NFR-SEC-01 | Encrypt data in transit | Security | P5 | implemented | PARTIAL — FORCE_HTTPS + headers; TLS at reverse proxy; `TRUSTED_PROXIES` env (pre-prod M4) |
 | NFR-SEC-02 | Encrypt sensitive data at rest (AES-256) | Security | P5 | implemented | PARTIAL — `patients.national_id` encrypted (A9); searchable fields unencrypted by design |
 | NFR-SEC-03 | Authentication | Auth | P1 | approved | AUTH-* |
-| NFR-SEC-04 | Authorization / RBAC | RBAC | P1 | approved | AUTH-03/04 |
+| NFR-SEC-04 | Authorization / RBAC | RBAC | P1 | approved | AUTH-03/04; pre-prod M1 reject guard + M2 doctor ACL |
 | NFR-REL-01 | Availability ≥ 99% | Ops | P5 | implemented | PARTIAL — `/health` + runbooks; 99% SLA not measured in A9 |
 | NFR-UX-01 | Simple UI for non-technical users | UI | P1–P5 | implemented | Usability review |
 | NFR-UX-02 | Full Arabic language UI | UI / i18n | P1 | approved | AC-24 |

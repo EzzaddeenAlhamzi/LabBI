@@ -119,10 +119,30 @@ class ResultReviewService
         });
     }
 
+    /**
+     * Result review transition matrix (server-enforced; UI alone is insufficient):
+     *
+     * | From (result)     | approve | return | reject |
+     * |-------------------|---------|--------|--------|
+     * | pending_review    | ✓       | ✓      | ✓      |
+     * | draft             | ✗       | ✗      | ✗      |
+     * | submitted         | ✗       | ✗      | ✗      |
+     * | approved          | ✗       | ✗      | ✗      |
+     * | returned          | ✗       | ✗      | ✗      |
+     * | rejected          | ✗       | ✗      | ✗      |
+     *
+     * Order-level reject remains gated by OrderStatus::canTransition
+     * (allowed from requested/sample_received/in_analysis/pending_review only —
+     * not from ready/completed/archived).
+     */
     public function reject(Result $result, User $reviewer, string $comment): Result
     {
         if (! $this->approval->canApprove($reviewer->id)) {
             throw new DomainException('غير مصرح برفض النتائج.');
+        }
+
+        if ($result->status !== Result::STATUS_PENDING_REVIEW) {
+            throw new DomainException('النتيجة ليست بانتظار المراجعة.');
         }
 
         if (trim($comment) === '') {
