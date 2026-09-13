@@ -3,23 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Patient;
-use App\Models\Sample;
-use App\Models\TestOrder;
-use App\Models\User;
+use App\Services\Bi\BIQueryService;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(BIQueryService $bi): View
     {
+        $dashboard = $bi->dashboard();
+
         return view('admin.dashboard', [
             'stats' => [
-                'users' => User::count(),
-                'patients' => Patient::count(),
-                'orders' => TestOrder::count(),
-                'samples' => Sample::count(),
+                'users' => null, // kept for backward-compatible blade keys if needed
             ],
+            'cards' => $dashboard['cards'],
+            'performance' => $dashboard['performance'],
         ]);
     }
 }

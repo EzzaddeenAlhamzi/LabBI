@@ -2,7 +2,7 @@
 
 **Status values (post Phase 0):** `planning` | `not started` | `in progress` | `implemented` | `verified` | `approved` | `deferred` | `decided`  
 **Source:** `docs/source/labbi-requirements-extracted.md`  
-**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–2 approved on main; Phase 3 implementer-complete pending A8/A9.
+**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–3 approved on main; Phase 4 implementer-complete pending A8/A9.
 
 ### Legend — Implementation phase
 
@@ -63,7 +63,7 @@
 | PAT-07 | Show all patient results | Patients | P2 | verified | Results tab; AC-15 |
 | PAT-08 | Show attachments | Patients / Attachments | P2 | verified | Attachments tab |
 | PAT-09 | Show laboratory medical history | Patients / Archive | P2–P4 | verified | History view; AC-18 |
-| PAT-10 | Compare prior results | Comparison | P4 | planning | Comparison UI; AC-19 |
+| PAT-10 | Compare prior results | Comparison | P4 | verified | Comparison UI; AC-19 |
 
 ---
 
@@ -154,8 +154,8 @@
 | CRT-08 | Record discovery timestamp | Critical Engine | P2 | verified | AC-12 |
 | CRT-09 | Notify doctor | Critical Engine / Notifications | P2–P3 | verified | AC-11 |
 | CRT-10 | Record notification send timestamp | Critical Engine / Notifications | P3 | verified | AC-12 |
-| CRT-11 | Include case on Critical Cases dashboard | Critical Engine / BI | P4 | planning | Dashboard presence |
-| CRT-12 | Compute Turnaround Time (TAT) related metrics | Critical Engine / BI | P4 | planning | TAT calculation tests; AC-20 |
+| CRT-11 | Include case on Critical Cases dashboard | Critical Engine / BI | P4 | verified | Dashboard presence |
+| CRT-12 | Compute Turnaround Time (TAT) related metrics | Critical Engine / BI | P4 | verified | TAT calculation tests; AC-20 |
 
 ---
 
@@ -232,9 +232,9 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| CMP-01 | Doctor selects patient, test, time range | Comparison | P4 | planning | Filter UI tests; AC-19 |
-| CMP-02 | Show date, value, unit, status (Normal/Abnormal/Critical) | Comparison | P4 | planning | Table content tests |
-| CMP-03 | Show trend: rising / falling / stable with color indicator | Comparison | P4 | planning | Trend logic tests; AC-19 |
+| CMP-01 | Doctor selects patient, test, time range | Comparison | P4 | verified | Filter UI tests; AC-19 |
+| CMP-02 | Show date, value, unit, status (Normal/Abnormal/Critical) | Comparison | P4 | verified | Table content tests |
+| CMP-03 | Show trend: rising / falling / stable with color indicator | Comparison | P4 | verified | Trend logic tests; AC-19 |
 
 ---
 
@@ -242,11 +242,11 @@
 
 | Requirement ID | Description | Module | Implementation phase | Status | Verification method |
 |---|---|---|---|---|---|
-| BI-01 | Cards: patients, doctors, tests, today’s tests, in analysis, completed, deferred, rejected, critical cases | BI | P4 | planning | Card value tests; AC-20 |
-| BI-02 | Performance: tests in period, avg completion time, critical count, critical handling time | BI | P4 | planning | Metric calculation tests; AC-20 |
-| BI-03 | Reports by date, test type, lab/department (when enabled), status, performance | BI / Reports | P4 | planning | Report export/filter tests |
-| BI-04 | BI may start with numbers/tables/cards/color indicators; charts optional later (source clarification) | BI | P4 | planning | MVP BI acceptance without mandatory charts |
-| BI-05 | BI analyzes operational/lab data — does **not** diagnose disease | BI | P4 | planning | Scope review; no diagnosis features |
+| BI-01 | Cards: patients, doctors, tests, today’s tests, in analysis, completed, deferred, rejected, critical cases | BI | P4 | verified | Card value tests; AC-20 |
+| BI-02 | Performance: tests in period, avg completion time, critical count, critical handling time | BI | P4 | verified | Metric calculation tests; AC-20 |
+| BI-03 | Reports by date, test type, lab/department (when enabled), status, performance | BI / Reports | P4 | verified | Report export/filter tests |
+| BI-04 | BI may start with numbers/tables/cards/color indicators; charts optional later (source clarification) | BI | P4 | verified | MVP BI acceptance without mandatory charts |
+| BI-05 | BI analyzes operational/lab data — does **not** diagnose disease | BI | P4 | verified | Scope review; no diagnosis features |
 
 ---
 
@@ -300,7 +300,7 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| UI-A-01 | Admin Dashboard | BI | P4 | planning | Screen QA |
+| UI-A-01 | Admin Dashboard | BI | P4 | verified | Screen QA |
 | UI-A-02 | Users | Users | P1 | approved | Screen QA |
 | UI-A-03 | Create User | Users | P1 | approved | Screen QA |
 | UI-A-04 | Edit User | Users | P1 | approved | Screen QA |
@@ -317,8 +317,8 @@ Every screen below is a requirement derived from source §35.
 | UI-A-15 | Order Details | Orders | P1 | approved | Screen QA |
 | UI-A-16 | Results | Results | P2 | verified | Screen QA |
 | UI-A-17 | Critical Results | Critical | P2–P4 | verified | Screen QA |
-| UI-A-18 | BI Dashboard | BI | P4 | planning | Screen QA |
-| UI-A-19 | Operational Reports | BI | P4 | planning | Screen QA |
+| UI-A-18 | BI Dashboard | BI | P4 | verified | Screen QA |
+| UI-A-19 | Operational Reports | BI | P4 | verified | Screen QA |
 | UI-A-20 | Archived Reports | Archive | P3–P4 | verified | Screen QA (P3 archive/reports) |
 | UI-A-21 | Audit Logs | Audit | P5 | planning | Screen QA |
 | UI-A-22 | Backup Management | Backup | P5 | planning | Screen QA |
@@ -353,7 +353,7 @@ Every screen below is a requirement derived from source §35.
 | UI-D-06 | Results | Results | P2–P3 | verified | Screen QA |
 | UI-D-07 | Critical Results | Critical | P2–P3 | planning | Screen QA |
 | UI-D-08 | Result Details | Results | P2–P3 | verified | Screen QA |
-| UI-D-09 | Historical Comparison | Comparison | P4 | planning | Screen QA |
+| UI-D-09 | Historical Comparison | Comparison | P4 | verified | Screen QA |
 | UI-D-10 | Reports/PDF | PDF | P3 | verified | Screen QA |
 
 ### Patient
@@ -509,8 +509,8 @@ Every screen below is a requirement derived from source §35.
 | AC-16 | Email sent to doctor | Email | P3 | verified | Feature Phase3AcceptanceTest / mail trap |
 | AC-17 | Patient receives readiness notification | Notifications / WA | P3 | verified | Feature Phase3AcceptanceTest |
 | AC-18 | Exam archived | Archive | P2–P3 | verified | Feature Phase3AcceptanceTest |
-| AC-19 | Doctor can compare new vs prior exam | Comparison | P4 | planning | E2E |
-| AC-20 | Manager sees test counts and completion times | BI | P4 | planning | E2E |
+| AC-19 | Doctor can compare new vs prior exam | Comparison | P4 | verified | Feature Phase4AcceptanceTest |
+| AC-20 | Manager sees test counts and completion times | BI | P4 | verified | Feature Phase4AcceptanceTest |
 | AC-21 | Permissions block unauthorized access | RBAC | P1 | verified | Feature test Phase1AcceptanceTest |
 | AC-22 | Daily backup executes | Backup | P5 | planning | Ops E2E |
 | AC-23 | Backup restore succeeds | Backup | P5 | planning | Ops E2E |

@@ -25,9 +25,11 @@ class WorkflowTransitionServiceTest extends TestCase
 
         $wf->transition($order, OrderStatus::SAMPLE_RECEIVED);
         $wf->transition($order, OrderStatus::IN_ANALYSIS);
+        $this->assertNotNull($order->fresh()->analysis_started_at);
         $wf->transition($order, OrderStatus::PENDING_REVIEW);
         $wf->transition($order, OrderStatus::READY);
         $wf->transition($order, OrderStatus::COMPLETED);
+        $this->assertNotNull($order->fresh()->completed_at);
         $wf->transition($order, OrderStatus::ARCHIVED);
 
         $this->assertSame(OrderStatus::ARCHIVED, $order->fresh()->status);

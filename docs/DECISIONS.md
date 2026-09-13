@@ -213,6 +213,44 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ---
 
+## D-021 — Phase 4 TAT timestamps & trend policy
+
+- **Status:** accepted  
+- **Decision:**  
+  - TAT uses real columns only: `ordered_at`, `samples.received_at`, `analysis_started_at`, `results.submitted_at`/`entered_at`, `results.approved_at`, `completed_at`, `critical_alerts.discovered_at`/`notified_at`/`acknowledged_at`.  
+  - Missing timestamps report limitations — never invent.  
+  - Critical dashboard consumes stored Phase 2 `critical_alerts` only (no CriticalValueEngine duplication).  
+  - Trends are Rising/Falling/Stable with 5% relative threshold; incompatible units → safe non-trend; language is non-diagnostic.  
+- **Rationale:** Align BI with actual schema (`discovered_at` not `detected_at`); AC-19/AC-20; BI-05  
+- **Open questions:** Stakeholder confirmation of 5% stable threshold  
+- **Reversible?** Formula threshold yes; column names locked to schema
+
+---
+
+## D-022 — Phase 4 Admin BI ACL + reporting windows (A8 Medium)
+
+- **Status:** accepted  
+- **Decision:**  
+  - **Authorization matrix (Admin BI):**  
+
+    | Surface | Route | Required permission(s) | Lab tech | Doctor | Patient |
+    |---|---|---|---|---|---|
+    | Admin home BI cards/TAT | `GET /admin` | `bi.view` (nested; outer group alone insufficient) | 403 | 403 | 403 |
+    | BI dashboard | `GET /admin/bi` | `bi.view` | 403 | 403 | 403 |
+    | Operational reports | `GET /admin/reports/operational` | `reports.operational` **OR** `bi.view` | 403 | 403 | 403 |
+    | Critical cases BI | `GET /admin/critical-cases` | `bi.view` **only** (not `critical.view_all`) | 403 | 403 | 403 |
+    | Lab critical ops | `GET /lab/critical` | `critical.view_all` | ✓ | — | — |
+    | Doctor comparison | `GET /doctor/comparison` | `comparison.use` + patient-scoped service ACL | 403 | own patients | 403 |
+
+  - Prefer explicit BI permissions over role ORs. `critical.view_all` / `patients.view_all` must **not** open Admin BI.  
+  - **Reporting window:** when `date_from`/`date_to` omitted on BI/operational/critical reporting filters → default **last 30 inclusive days**; max span **366 inclusive days** (ValidationException). Doctor comparison does **not** force the 30-day default (patient-scoped) but still rejects excessive explicit pairs.  
+  - **TAT aggregates:** summary averages use SQL (`AVG` of the same timestamp formulas as `TATService`); detail rows stay paginated; no fetch-all-then-calc for metrics; no Redis.  
+- **Rationale:** Close A8 M1/M2 privilege creep and M3/M4 unbounded hydrate / N+1.  
+- **Open questions:** None for Phase 4 merge.  
+- **Reversible?** Window lengths tunable; ACL tightening is intentional.
+
+---
+
 ## Locked summary (Phase 1 gate)
 
 | Topic | Lock |
