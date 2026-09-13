@@ -268,6 +268,21 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ---
 
+## D-024 — Pre-production A8 Medium closure (M1–M5)
+
+- **Status:** accepted  
+- **Decision:**  
+  - **M1:** Result reject/return/approve only from `pending_review` (server-enforced). No reject-after-approve kill switch in V1.  
+  - **M2:** Doctors cannot claim unassigned patients via order create; Admin assigns `primary_doctor_id`. Authorized = primary doctor **or** existing order relationship.  
+  - **M3:** User role sync audits `users.role_change` with old/new `role_codes` and `permission_codes` (no secrets).  
+  - **M4:** `TRUSTED_PROXIES` env-driven; default empty (do not trust forwarded headers); `*` only when perimeter-locked.  
+  - **M5:** Restore UI returns generic Arabic errors; technical detail logged server-side only.  
+- **Rationale:** Close A8 Medium integrity/IDOR/audit/proxy/error-exposure gaps without adding features.  
+- **Open questions:** CAT-04 clinical catalog remains a separate gate.  
+- **Reversible?** Proxy list tunable; claim policy intentional hardening.
+
+---
+
 ## Locked summary (Phase 1 gate)
 
 | Topic | Lock |

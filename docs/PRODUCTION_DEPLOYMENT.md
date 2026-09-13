@@ -26,6 +26,7 @@ Copy from `.env.example` and set:
 |---|---|---|
 | App | `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `APP_KEY` | Debug **false** |
 | HTTPS | `FORCE_HTTPS=true`, `SESSION_SECURE_COOKIE=true` | Required behind TLS |
+| Proxies | `TRUSTED_PROXIES` (CSV IPs/CIDRs; avoid `*` unless perimeter-locked) | Empty = no trust |
 | Session | `SESSION_DRIVER=database`, `SESSION_SAME_SITE=lax`, `SESSION_HTTP_ONLY=true` | |
 | DB | `DB_*` | Least-privilege DB user |
 | Queue | `QUEUE_CONNECTION=database` (or redis) | Workers supervised |
@@ -44,9 +45,21 @@ Terminate TLS at nginx/Caddy/ALB/etc.:
 
 - Redirect HTTP → HTTPS  
 - Set `Strict-Transport-Security` (app also emits HSTS when secure)  
-- Forward `X-Forwarded-Proto` / `X-Forwarded-For` (app trusts proxies)  
+- Forward `X-Forwarded-Proto` / `X-Forwarded-For` / `X-Forwarded-Port` / `X-Forwarded-Host`  
+- Configure app `TRUSTED_PROXIES` to the **proxy/LB IP(s) or CIDRs** so Laravel derives client IP and HTTPS correctly  
+- Leave `TRUSTED_PROXIES` **empty** when the app is reached directly (local/dev) — prevents clients from spoofing forwarded headers  
+- Use `TRUSTED_PROXIES=*` **only** when network policy guarantees clients cannot hit PHP-FPM without the proxy  
 - Do not expose `/storage` to private disk paths  
 - Optional: CSP/X-Frame at proxy **in addition to** app headers  
+
+Example (nginx → private PHP):
+
+```bash
+# .env on app servers
+FORCE_HTTPS=true
+SESSION_SECURE_COOKIE=true
+TRUSTED_PROXIES=10.0.0.10,10.0.0.0/16
+```
 
 ---
 
@@ -99,5 +112,6 @@ Production drill blocked unless `ALLOW_RESTORE_DRILL_IN_PRODUCTION=true` (discou
 
 ## 8. Go-live gate (coordinator)
 
-Independent **A8** security re-cert + **A9** final QA must pass before declaring **LABBI PRODUCTION READY**.  
+Independent **A8** security re-cert (Critical/High/Medium = 0) + **A9** final QA must pass before declaring **LABBI PRODUCTION READY**.  
+**CAT-04** clinical catalog sign-off remains a separate gate.  
 This document alone is not a production certification.

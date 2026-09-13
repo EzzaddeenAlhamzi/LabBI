@@ -17,8 +17,8 @@
 | Phase 2 | **Approved** — PRs #3/#4 merged; post-merge verification PR #5 merged |
 | Phase 3 | **Approved** — PR #6 merged; post-merge verification PR #8 merged |
 | Phase 4 | **Approved** — PRs #9/#10/#11 merged; post-merge verification PR #12 merged |
-| Phase 5 | **Implementer-complete** — Security/Ops + Audit/Backup UI; A8/A9 required before PRODUCTION READY |
-| Base | Confirmed `origin/main` includes PR #12 (`c572d4f`) |
+| Phase 5 | **Merged to main** (PR #13/#14); pre-production A8 Medium closure in progress | Security/Ops; A8/A9 re-review after M1–M5 |
+| Base | Confirmed `origin/main` includes Phase 5 (`8da4e00`) |
 
 ---
 
@@ -31,7 +31,7 @@
 | P2 | Laboratory workflow | `approved` (PRs #3/#4/#5) |
 | P3 | Communication & documents | `approved` (PRs #6/#8) |
 | P4 | Intelligence (BI/comparison/TAT) | `approved` (PRs #9/#10/#11/#12) |
-| P5 | Security & production | `implementer-complete` (pending A8/A9) |
+| P5 | Security & production | `merged` (PR #13/#14); pre-prod Medium closure pending A8/A9 re-review |
 
 ---
 
@@ -78,8 +78,10 @@
 
 ## Requirements Implementation Status (summary)
 
-- Phase 1–4: **approved** on `main` (PR #12 confirms Phase 4 post-merge).  
-- Phase 5 AC-22 / AC-23 / AC-25 (+ SEC/BKP/AUD ops): **in progress** — independent A8/A9 still required before any production verdict.
+- Phase 1–5: **merged** on `main` (Phase 5 PR #13/#14).  
+- Pre-production A8 Mediums M1–M5: **implementer-closed** on `cursor/pre-production-security-closure-9285` — independent A8/A9 re-review required.  
+- **CAT-04** clinical catalog sign-off: still open.  
+- Do **not** claim PRODUCTION READY until A8 reports Critical/High/Medium = 0 and A9 consolidates.
 
 ---
 
@@ -97,19 +99,22 @@
 
 Before any consolidated **LABBI PRODUCTION READY** claim:
 
-- **A8:** Independent security/ops re-cert of hardening, audit UI, backup/restore, headers, secrets, file ACL  
+- **A8:** Independent security/ops re-cert after Medium closure — expect Critical/High/Medium = 0 unresolved  
 - **A9:** Final black-box AC-22/23/25 + full P1–P5 regression  
 
 Test commands for reviewers:
 
 ```bash
 php artisan test
+php artisan test --filter=PreProductionSecurityClosureTest
 php artisan labbi:backup --disk=local
 php artisan labbi:restore-drill --force
 php artisan schedule:list
 php artisan queue:failed
 curl -s http://127.0.0.1:8000/health
 ```
+
+See `docs/PRE_PRODUCTION_SECURITY_CLOSURE.md`.
 
 ---
 
@@ -135,3 +140,4 @@ No automatic diagnosis/AI, native mobile app, inventory, accounting, or analyzer
 | 2026-09-13 | Phase 4 A8 Medium fixes (BI ACL OR-gates + bounded TAT/SQL aggregates); 100 tests; D-022 |
 | 2026-09-13 | Phase 4 approved (PR #12 post-merge); Phase 5 started on `cursor/phase5-security-ops-audit-5e79` |
 | 2026-09-13 | Phase 5 implementer-complete; 116 tests; AC-22/23/25 evidence; A8/A9 still required — no PRODUCTION READY claim |
+| 2026-09-13 | Phase 5 merged (PR #13/#14); pre-production A8 Medium closure M1–M5; 125 tests / 815 assertions; D-024; CAT-04 still open |
