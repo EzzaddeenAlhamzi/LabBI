@@ -1,6 +1,5 @@
-@extends('layouts.app')
-@section('heading', 'غير مصرح')
-@section('content')
-<div class="card"><p>{{ $exception->getMessage() ?: 'ليس لديك صلاحية للوصول إلى هذه الصفحة.' }}</p>
-<a class="btn" href="{{ url()->previous() }}">رجوع</a></div>
-@endsection
+@include('errors.safe', [
+    'code' => 403,
+    'title' => 'غير مصرح',
+    'message' => isset($exception) && $exception->getMessage() ? $exception->getMessage() : 'ليس لديك صلاحية للوصول إلى هذه الصفحة.',
+])

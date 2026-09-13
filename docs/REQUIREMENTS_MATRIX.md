@@ -2,7 +2,7 @@
 
 **Status values (post Phase 0):** `planning` | `not started` | `in progress` | `implemented` | `verified` | `approved` | `deferred` | `decided`  
 **Source:** `docs/source/labbi-requirements-extracted.md`  
-**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–3 approved on main; Phase 4 implementer-complete pending A8/A9.
+**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–4 approved on main (PR #12); Phase 5 in progress — A8/A9 still required before production verdict.
 
 ### Legend — Implementation phase
 
@@ -322,7 +322,7 @@ Every screen below is a requirement derived from source §35.
 | UI-A-20 | Archived Reports | Archive | P3–P4 | verified | Screen QA (P3 archive/reports) |
 | UI-A-21 | Audit Logs | Audit | P5 | planning | Screen QA |
 | UI-A-22 | Backup Management | Backup | P5 | planning | Screen QA |
-| UI-A-23 | System Settings | Settings | P5 | planning | Screen QA |
+| UI-A-23 | System Settings | Settings | P5 | implemented | Screen QA (non-secret only) |
 
 ### Laboratory
 
@@ -385,8 +385,8 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| AUD-01 | Persist user, action, table/record, old value, new value, time, IP when needed | Audit | P5 (instrument from P1) | planning | Audit write tests |
-| AUD-02 | Must log: patient create/edit; order create; sample receive; result enter/edit/approve; critical discovery; alert send; report view; permission changes | Audit | P1–P5 | planning | Event coverage checklist |
+| AUD-01 | Persist user, action, table/record, old value, new value, time, IP when needed | Audit | P5 (instrument from P1) | implemented | Audit write tests + Admin UI |
+| AUD-02 | Must log: patient create/edit; order create; sample receive; result enter/edit/approve; critical discovery; alert send; report view; permission changes | Audit | P1–P5 | implemented | Event coverage checklist |
 
 ---
 
@@ -399,21 +399,21 @@ Every screen below is a requirement derived from source §35.
 | NFR-PERF-03 | Process orders without delay | Platform | P1–P2 | planning | Load smoke |
 | NFR-PERF-04 | Send alerts without delay | Notifications | P3 | planning | Queue latency observation |
 | NFR-PERF-05 | Generate BI reports quickly | BI | P4 | planning | Report timing smoke |
-| NFR-SEC-01 | Encrypt data in transit | Security | P5 | planning | HTTPS enforcement |
-| NFR-SEC-02 | Encrypt sensitive data at rest (AES-256) | Security | P5 | planning | Field encryption tests |
-| NFR-SEC-03 | Authentication | Auth | P1 | planning | AUTH-* |
-| NFR-SEC-04 | Authorization / RBAC | RBAC | P1 | planning | AUTH-03/04 |
-| NFR-REL-01 | Availability ≥ 99% | Ops | P5 | planning | Uptime monitoring post-deploy |
-| NFR-UX-01 | Simple UI for non-technical users | UI | P1–P5 | planning | Usability review |
-| NFR-UX-02 | Full Arabic language UI | UI / i18n | P1 | planning | AC-24 |
-| NFR-SCALE-01 | Support adding users, patients, departments, labs | Platform | P1–P5 | planning | Multi-dept data model readiness |
-| NFR-BK-01 | Automatic daily backup | Backup | P5 | planning | AC-22 |
-| NFR-BK-02 | Restore capability | Backup | P5 | planning | AC-23 |
-| NFR-COMPAT-01 | Supported browsers | Frontend | P5 | planning | AC-25 |
-| NFR-COMPAT-02 | Future-ready for analyzers and mobile apps | Architecture | Future | planning | API/modular design review |
-| NFR-MAINT-01 | Modular architecture | Architecture | P1 | planning | Module boundary review |
-| NFR-MAINT-02 | Code documentation | Engineering | P1–P5 | planning | Doc checklist |
-| NFR-MAINT-03 | Easy addition of new tests | Catalog | P1 | planning | Add-test smoke |
+| NFR-SEC-01 | Encrypt data in transit | Security | P5 | implemented | HTTPS enforcement |
+| NFR-SEC-02 | Encrypt sensitive data at rest (AES-256) | Security | P5 | implemented | Field encryption tests |
+| NFR-SEC-03 | Authentication | Auth | P1 | approved | AUTH-* |
+| NFR-SEC-04 | Authorization / RBAC | RBAC | P1 | approved | AUTH-03/04 |
+| NFR-REL-01 | Availability ≥ 99% | Ops | P5 | implemented | Health endpoint + ops monitoring post-deploy |
+| NFR-UX-01 | Simple UI for non-technical users | UI | P1–P5 | implemented | Usability review |
+| NFR-UX-02 | Full Arabic language UI | UI / i18n | P1 | approved | AC-24 |
+| NFR-SCALE-01 | Support adding users, patients, departments, labs | Platform | P1–P5 | approved | Multi-dept data model readiness |
+| NFR-BK-01 | Automatic daily backup | Backup | P5 | implemented | AC-22 |
+| NFR-BK-02 | Restore capability | Backup | P5 | implemented | AC-23 |
+| NFR-COMPAT-01 | Supported browsers | Frontend | P5 | implemented | AC-25 (A9 re-confirm) |
+| NFR-COMPAT-02 | Future-ready for analyzers and mobile apps | Architecture | Future | deferred | API/modular design review |
+| NFR-MAINT-01 | Modular architecture | Architecture | P1 | approved | Module boundary review |
+| NFR-MAINT-02 | Code documentation | Engineering | P1–P5 | in progress | Doc checklist |
+| NFR-MAINT-03 | Easy addition of new tests | Catalog | P1 | approved | Add-test smoke |
 
 ---
 
@@ -421,20 +421,20 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| SEC-01 | HTTPS/SSL | Security | P5 | planning | TLS config |
-| SEC-02 | Password hashing | Auth | P1 | planning | AUTH-06 |
-| SEC-03 | AES-256 for sensitive data | Security | P5 | planning | Encryption unit tests |
-| SEC-04 | Protect against SQL Injection | Security | P1 | planning | ORM/prepared statements review + tests |
-| SEC-05 | Protect against XSS | Security | P1 | planning | Escaping / CSP tests |
-| SEC-06 | RBAC | RBAC | P1 | planning | AUTH-03 |
-| SEC-REC-01 | CSRF protection (recommendation beyond literal source) | Security | P1 | planning | CSRF token tests |
-| SEC-REC-02 | Server-side validation | Security | P1 | planning | Invalid payload tests |
-| SEC-REC-03 | Login rate limiting | Security | P1–P5 | planning | Brute-force tests |
-| SEC-REC-04 | Secure cookies | Security | P1 | planning | Cookie flags |
-| SEC-REC-05 | Session expiration | Security | P1 | planning | AUTH-05 |
-| SEC-REC-06 | Prepared statements / ORM | Security | P1 | planning | Code review |
-| SEC-REC-07 | Do not expose internal errors to users | Security | P1 | planning | Error page QA |
-| SEC-REC-08 | Security event logging | Audit / Security | P5 | planning | Security log presence |
+| SEC-01 | HTTPS/SSL | Security | P5 | implemented | TLS config |
+| SEC-02 | Password hashing | Auth | P1 | approved | AUTH-06 |
+| SEC-03 | AES-256 for sensitive data | Security | P5 | implemented | Encryption unit tests |
+| SEC-04 | Protect against SQL Injection | Security | P1 | approved | ORM/prepared statements review + tests |
+| SEC-05 | Protect against XSS | Security | P1 | approved | Escaping / CSP tests |
+| SEC-06 | RBAC | RBAC | P1 | approved | AUTH-03 |
+| SEC-REC-01 | CSRF protection (recommendation beyond literal source) | Security | P1 | approved | CSRF token tests |
+| SEC-REC-02 | Server-side validation | Security | P1 | approved | Invalid payload tests |
+| SEC-REC-03 | Login rate limiting | Security | P1–P5 | implemented | Brute-force tests |
+| SEC-REC-04 | Secure cookies | Security | P1 | implemented | Cookie flags |
+| SEC-REC-05 | Session expiration | Security | P1 | approved | AUTH-05 |
+| SEC-REC-06 | Prepared statements / ORM | Security | P1 | approved | Code review |
+| SEC-REC-07 | Do not expose internal errors to users | Security | P1 | implemented | Error page QA |
+| SEC-REC-08 | Security event logging | Audit / Security | P5 | implemented | Security log presence |
 
 ---
 
@@ -442,9 +442,9 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| BKP-01 | Automatic daily backup | Backup | P5 | planning | AC-22 |
-| BKP-02 | Record date, status, size, storage location | Backup | P5 | planning | Metadata assertions |
-| BKP-03 | Restore for emergency recovery | Backup | P5 | planning | AC-23 |
+| BKP-01 | Automatic daily backup | Backup | P5 | implemented | AC-22 |
+| BKP-02 | Record date, status, size, storage location | Backup | P5 | implemented | Metadata assertions |
+| BKP-03 | Restore for emergency recovery | Backup | P5 | implemented | AC-23 |
 
 ---
 
@@ -512,10 +512,10 @@ Every screen below is a requirement derived from source §35.
 | AC-19 | Doctor can compare new vs prior exam | Comparison | P4 | verified | Feature Phase4AcceptanceTest |
 | AC-20 | Manager sees test counts and completion times | BI | P4 | verified | Feature Phase4AcceptanceTest |
 | AC-21 | Permissions block unauthorized access | RBAC | P1 | verified | Feature test Phase1AcceptanceTest |
-| AC-22 | Daily backup executes | Backup | P5 | planning | Ops E2E |
-| AC-23 | Backup restore succeeds | Backup | P5 | planning | Ops E2E |
+| AC-22 | Daily backup executes | Backup | P5 | implemented | Ops E2E + automated |
+| AC-23 | Backup restore succeeds | Backup | P5 | implemented | Ops E2E + automated |
 | AC-24 | UI works in Arabic | i18n | P1 | verified | RTL Arabic shell assert + manual QA |
-| AC-25 | UIs work on target browsers | Frontend | P5 | planning | Cross-browser QA |
+| AC-25 | UIs work on target browsers | Frontend | P5 | implemented | Cross-browser QA (A9 re-confirm) |
 
 ---
 

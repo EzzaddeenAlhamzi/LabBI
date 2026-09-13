@@ -251,6 +251,23 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ---
 
+## D-023 — Phase 5 security/ops + backup defaults
+
+- **Status:** accepted  
+- **Decision:**  
+  - Encrypt `patients.national_id` via Laravel encrypted cast (AES-256-CBC / `APP_KEY`); do **not** encrypt searchable keys (medical file number, name, phone) in V1.  
+  - Passwords remain adaptive hashes (never reversible encryption).  
+  - Daily backup via scheduler `labbi:backup`; portable ZIP (DB JSON + private files) on `BACKUP_DISK`.  
+  - Restore requires `backups.manage` + explicit `RESTORE` confirmation; restore drill blocked in production unless `ALLOW_RESTORE_DRILL_IN_PRODUCTION=true`.  
+  - Audit logs append-only; Admin Audit UI redacts secrets / national_id.  
+  - Security headers middleware + reverse-proxy TLS; `APP_DEBUG=false` mandatory in production.  
+  - System Settings UI shows non-secret config only.  
+- **Rationale:** Close AC-22/23 and NFR security/backup without breaking clinical search indexes.  
+- **Open questions:** Retention length (GAP-10); hosting provider preference.  
+- **Reversible?** Field encryption set expandable carefully; backup format versioned (`database.json` v1).
+
+---
+
 ## Locked summary (Phase 1 gate)
 
 | Topic | Lock |

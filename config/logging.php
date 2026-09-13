@@ -73,6 +73,46 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_RETENTION_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
+        'backup' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/backup.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_RETENTION_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
+        'scheduler' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/scheduler.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_RETENTION_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
+        'queue' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/queue.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_RETENTION_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
+        'notification' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/notification.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_RETENTION_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

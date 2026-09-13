@@ -26,6 +26,8 @@ class Patient extends Model
     {
         return [
             'date_of_birth' => 'date',
+            // AES-256 via APP_KEY (Laravel encrypted cast). Not used for search indexes.
+            'national_id' => 'encrypted',
         ];
     }
 
