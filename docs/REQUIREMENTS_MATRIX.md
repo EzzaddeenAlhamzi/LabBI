@@ -2,7 +2,7 @@
 
 **Status values (post Phase 0):** `planning` | `not started` | `in progress` | `implemented` | `verified` | `approved` | `deferred` | `decided`  
 **Source:** `docs/source/labbi-requirements-extracted.md`  
-**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–4 approved on main (PR #12); Phase 5 in progress — A8/A9 still required before production verdict.
+**Rule:** Nothing from the original analysis may be silently ignored. Mark implemented only when coded and verified. Phase 1–4 approved on main (PR #12); Phase 5 independently QA’d by A9 (**PASS WITH NOTES**, 2026-09-13) — coordinator still consolidates A8 before any production verdict.
 
 ### Legend — Implementation phase
 
@@ -320,9 +320,9 @@ Every screen below is a requirement derived from source §35.
 | UI-A-18 | BI Dashboard | BI | P4 | verified | Screen QA |
 | UI-A-19 | Operational Reports | BI | P4 | verified | Screen QA |
 | UI-A-20 | Archived Reports | Archive | P3–P4 | verified | Screen QA (P3 archive/reports) |
-| UI-A-21 | Audit Logs | Audit | P5 | planning | Screen QA |
-| UI-A-22 | Backup Management | Backup | P5 | planning | Screen QA |
-| UI-A-23 | System Settings | Settings | P5 | implemented | Screen QA (non-secret only) |
+| UI-A-21 | Audit Logs | Audit | P5 | verified | A9 Chrome screen QA + Phase5AcceptanceTest |
+| UI-A-22 | Backup Management | Backup | P5 | verified | A9 Chrome screen QA + Phase5AcceptanceTest |
+| UI-A-23 | System Settings | Settings | P5 | verified | A9 screen QA; secrets hidden |
 
 ### Laboratory
 
@@ -376,7 +376,7 @@ Every screen below is a requirement derived from source §35.
 |---|---|---|---|---|---|
 | DB-01 | Use MySQL | Database | P1 | planning | Connection + migrations |
 | DB-02 | Store patients, orders, results, users, reports; link to BI | Database | P1–P4 | planning | Schema review |
-| DB-03 | Implement proposed tables: users, roles, permissions, role_user, role_permissions, patients, doctors, laboratory_staff, departments, tests, test_reference_ranges, test_orders, test_order_items, samples, results, result_attachments, result_reviews, critical_alerts, notifications, notification_deliveries, audit_logs, generated_reports, backups | Database | P1–P5 | planning | Migration checklist vs DATABASE_DESIGN |
+| DB-03 | Implement proposed tables: users, roles, permissions, role_user, role_permissions, patients, doctors, laboratory_staff, departments, tests, test_reference_ranges, test_orders, test_order_items, samples, results, result_attachments, result_reviews, critical_alerts, notifications, notification_deliveries, audit_logs, generated_reports, backups | Database | P1–P5 | verified | Migrations P1–P5 incl. backups; A9 migrate:fresh --seed |
 | DB-04 | Core relationships: Patient 1:N Orders; Doctor 1:N Orders; Order 1:N Items; Order 1:N Samples; Item↔Results; Test 1:N Ranges; Patient 1:N Results; Result 1:N Attachments; Result 1:N Critical Alerts; User 1:N Audit Logs | Database | P1 | planning | ERD review / FK tests |
 
 ---
@@ -385,8 +385,8 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| AUD-01 | Persist user, action, table/record, old value, new value, time, IP when needed | Audit | P5 (instrument from P1) | implemented | Audit write tests + Admin UI |
-| AUD-02 | Must log: patient create/edit; order create; sample receive; result enter/edit/approve; critical discovery; alert send; report view; permission changes | Audit | P1–P5 | implemented | Event coverage checklist |
+| AUD-01 | Persist user, action, table/record, old value, new value, time, IP when needed | Audit | P5 (instrument from P1) | verified | A9 Audit UI + Phase5AcceptanceTest |
+| AUD-02 | Must log: patient create/edit; order create; sample receive; result enter/edit/approve; critical discovery; alert send; report view; permission changes | Audit | P1–P5 | verified | Coverage via P1–P5 tests + A9 E2E audit trail |
 
 ---
 
@@ -399,20 +399,20 @@ Every screen below is a requirement derived from source §35.
 | NFR-PERF-03 | Process orders without delay | Platform | P1–P2 | planning | Load smoke |
 | NFR-PERF-04 | Send alerts without delay | Notifications | P3 | planning | Queue latency observation |
 | NFR-PERF-05 | Generate BI reports quickly | BI | P4 | planning | Report timing smoke |
-| NFR-SEC-01 | Encrypt data in transit | Security | P5 | implemented | HTTPS enforcement |
-| NFR-SEC-02 | Encrypt sensitive data at rest (AES-256) | Security | P5 | implemented | Field encryption tests |
+| NFR-SEC-01 | Encrypt data in transit | Security | P5 | implemented | PARTIAL — FORCE_HTTPS + headers; TLS at reverse proxy (A9) |
+| NFR-SEC-02 | Encrypt sensitive data at rest (AES-256) | Security | P5 | implemented | PARTIAL — `patients.national_id` encrypted (A9); searchable fields unencrypted by design |
 | NFR-SEC-03 | Authentication | Auth | P1 | approved | AUTH-* |
 | NFR-SEC-04 | Authorization / RBAC | RBAC | P1 | approved | AUTH-03/04 |
-| NFR-REL-01 | Availability ≥ 99% | Ops | P5 | implemented | Health endpoint + ops monitoring post-deploy |
+| NFR-REL-01 | Availability ≥ 99% | Ops | P5 | implemented | PARTIAL — `/health` + runbooks; 99% SLA not measured in A9 |
 | NFR-UX-01 | Simple UI for non-technical users | UI | P1–P5 | implemented | Usability review |
 | NFR-UX-02 | Full Arabic language UI | UI / i18n | P1 | approved | AC-24 |
 | NFR-SCALE-01 | Support adding users, patients, departments, labs | Platform | P1–P5 | approved | Multi-dept data model readiness |
-| NFR-BK-01 | Automatic daily backup | Backup | P5 | implemented | AC-22 |
-| NFR-BK-02 | Restore capability | Backup | P5 | implemented | AC-23 |
-| NFR-COMPAT-01 | Supported browsers | Frontend | P5 | implemented | AC-25 (A9 re-confirm) |
+| NFR-BK-01 | Automatic daily backup | Backup | P5 | verified | AC-22 A9 schedule + backup evidence |
+| NFR-BK-02 | Restore capability | Backup | P5 | verified | AC-23 A9 restore drill PASSED |
+| NFR-COMPAT-01 | Supported browsers | Frontend | P5 | verified | AC-25 Chrome+Firefox; Edge/Safari not claimed |
 | NFR-COMPAT-02 | Future-ready for analyzers and mobile apps | Architecture | Future | deferred | API/modular design review |
 | NFR-MAINT-01 | Modular architecture | Architecture | P1 | approved | Module boundary review |
-| NFR-MAINT-02 | Code documentation | Engineering | P1–P5 | in progress | Doc checklist |
+| NFR-MAINT-02 | Code documentation | Engineering | P1–P5 | implemented | Phase docs + runbooks present (A9) |
 | NFR-MAINT-03 | Easy addition of new tests | Catalog | P1 | approved | Add-test smoke |
 
 ---
@@ -421,20 +421,20 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| SEC-01 | HTTPS/SSL | Security | P5 | implemented | TLS config |
+| SEC-01 | HTTPS/SSL | Security | P5 | implemented | PARTIAL — prod proxy/HSTS guidance; local HTTP lab (A9) |
 | SEC-02 | Password hashing | Auth | P1 | approved | AUTH-06 |
-| SEC-03 | AES-256 for sensitive data | Security | P5 | implemented | Encryption unit tests |
+| SEC-03 | AES-256 for sensitive data | Security | P5 | implemented | PARTIAL — national_id field encryption verified (A9) |
 | SEC-04 | Protect against SQL Injection | Security | P1 | approved | ORM/prepared statements review + tests |
 | SEC-05 | Protect against XSS | Security | P1 | approved | Escaping / CSP tests |
 | SEC-06 | RBAC | RBAC | P1 | approved | AUTH-03 |
 | SEC-REC-01 | CSRF protection (recommendation beyond literal source) | Security | P1 | approved | CSRF token tests |
 | SEC-REC-02 | Server-side validation | Security | P1 | approved | Invalid payload tests |
-| SEC-REC-03 | Login rate limiting | Security | P1–P5 | implemented | Brute-force tests |
+| SEC-REC-03 | Login rate limiting | Security | P1–P5 | verified | Phase5AcceptanceTest + A9 login-fail screenshot |
 | SEC-REC-04 | Secure cookies | Security | P1 | implemented | Cookie flags |
 | SEC-REC-05 | Session expiration | Security | P1 | approved | AUTH-05 |
 | SEC-REC-06 | Prepared statements / ORM | Security | P1 | approved | Code review |
 | SEC-REC-07 | Do not expose internal errors to users | Security | P1 | implemented | Error page QA |
-| SEC-REC-08 | Security event logging | Audit / Security | P5 | implemented | Security log presence |
+| SEC-REC-08 | Security event logging | Audit / Security | P5 | verified | Failed login / throttle / backup audits (A9) |
 
 ---
 
@@ -442,9 +442,9 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| BKP-01 | Automatic daily backup | Backup | P5 | implemented | AC-22 |
-| BKP-02 | Record date, status, size, storage location | Backup | P5 | implemented | Metadata assertions |
-| BKP-03 | Restore for emergency recovery | Backup | P5 | implemented | AC-23 |
+| BKP-01 | Automatic daily backup | Backup | P5 | verified | AC-22 A9 |
+| BKP-02 | Record date, status, size, storage location | Backup | P5 | verified | Backup UI + metadata tests (A9) |
+| BKP-03 | Restore for emergency recovery | Backup | P5 | verified | AC-23 A9 restore drill |
 
 ---
 
@@ -455,12 +455,12 @@ Every screen below is a requirement derived from source §35.
 | TECH-01 | Frontend: HTML, CSS, JavaScript | Frontend | P1 | planning | Stack compliance review |
 | TECH-02 | Backend: PHP | Backend | P1 | planning | Stack compliance review |
 | TECH-03 | Database: MySQL | Database | P1 | planning | Stack compliance review |
-| TECH-04 | Security stack: HTTPS/SSL, AES-256, password hashing | Security | P1–P5 | planning | SECURITY_PLAN |
-| TECH-05 | IDE noted: VS Code (non-binding for product) | Tooling | P0 | planning | N/A product AC |
+| TECH-04 | Security stack: HTTPS/SSL, AES-256, password hashing | Security | P1–P5 | implemented | PARTIAL — hashing + field encrypt + TLS guidance (A9) |
+| TECH-05 | IDE noted: VS Code (non-binding for product) | Tooling | P0 | decided | N/A product AC |
 | TECH-06 | Laravel chosen as PHP framework (source optional; locked for LabBI V1) | Backend | P0–P1 | decided | D-003 locked |
-| HOST-01 | Support Local Server deployment | Ops | P5 | planning | Install guide dry-run |
-| HOST-02 | Support Cloud Hosting deployment | Ops | P5 | planning | Deploy dry-run |
-| HOST-03 | Build for Linux/web server without single-vendor lock-in | Ops | P5 | planning | Portable deploy review |
+| HOST-01 | Support Local Server deployment | Ops | P5 | verified | LOCAL_DEPLOYMENT.md + A9 local serve/seed |
+| HOST-02 | Support Cloud Hosting deployment | Ops | P5 | implemented | PARTIAL — PRODUCTION_DEPLOYMENT.md; cloud host not exercised in A9 |
+| HOST-03 | Build for Linux/web server without single-vendor lock-in | Ops | P5 | verified | Portable Laravel + env-based config (A9) |
 
 ---
 
@@ -480,10 +480,10 @@ Every screen below is a requirement derived from source §35.
 
 | Requirement ID | Description | Module | Phase | Status | Verification |
 |---|---|---|---|---|---|
-| OUT-01 | Do not build inventory system | — | Future | planning | Scope gate review |
-| OUT-02 | Do not build full financial / accounting system | — | Future | planning | Scope gate review |
-| OUT-03 | Do not build automatic disease diagnosis / diagnostic AI | — | Future | planning | Scope gate review |
-| OUT-04 | Do not build native mobile app in current phase | — | Future | planning | Scope gate review |
+| OUT-01 | Do not build inventory system | — | Future | deferred | OUT OF SCOPE — A9 confirmed not present |
+| OUT-02 | Do not build full financial / accounting system | — | Future | deferred | OUT OF SCOPE — A9 confirmed not present |
+| OUT-03 | Do not build automatic disease diagnosis / diagnostic AI | — | Future | deferred | OUT OF SCOPE — A9 confirmed not present |
+| OUT-04 | Do not build native mobile app in current phase | — | Future | deferred | OUT OF SCOPE — A9 confirmed not present |
 
 ---
 
@@ -497,13 +497,13 @@ Every screen below is a requirement derived from source §35.
 | AC-04 | Create order linked to patient and doctor | Orders | P1 | verified | Feature test Phase1AcceptanceTest |
 | AC-05 | Order appears to laboratory | Orders / Lab | P1 | verified | Feature test Phase1AcceptanceTest |
 | AC-06 | Confirm sample receipt | Samples | P1 | verified | Feature test Phase1AcceptanceTest |
-| AC-07 | Enter result | Results | P2 | planning | E2E |
-| AC-08 | Normal result does not create Critical Alert | Critical Engine | P2 | planning | E2E |
-| AC-09 | Over critical limit → automatic detection | Critical Engine | P2 | planning | E2E |
-| AC-10 | Critical Alert appears immediately | Critical Engine | P2 | planning | E2E |
+| AC-07 | Enter result | Results | P2 | verified | Phase2AcceptanceTest + A9 E2E |
+| AC-08 | Normal result does not create Critical Alert | Critical Engine | P2 | verified | Phase2AcceptanceTest |
+| AC-09 | Over critical limit → automatic detection | Critical Engine | P2 | verified | Phase2AcceptanceTest + A9 E2E |
+| AC-10 | Critical Alert appears immediately | Critical Engine | P2 | verified | Phase2AcceptanceTest + A9 E2E |
 | AC-11 | Doctor is notified | Notifications | P2–P3 | verified | Feature Phase3AcceptanceTest |
 | AC-12 | Discovery and notification timestamps recorded | Critical / Audit | P2–P3 | verified | Data assertions |
-| AC-13 | Result can be approved | Review | P2 | planning | E2E |
+| AC-13 | Result can be approved | Review | P2 | verified | Phase2AcceptanceTest + A9 E2E |
 | AC-14 | PDF can be generated | PDF | P3 | verified | Feature Phase3AcceptanceTest |
 | AC-15 | Doctor can access result | Doctor Portal | P3 | verified | Feature Phase3AcceptanceTest |
 | AC-16 | Email sent to doctor | Email | P3 | verified | Feature Phase3AcceptanceTest / mail trap |
@@ -512,10 +512,10 @@ Every screen below is a requirement derived from source §35.
 | AC-19 | Doctor can compare new vs prior exam | Comparison | P4 | verified | Feature Phase4AcceptanceTest |
 | AC-20 | Manager sees test counts and completion times | BI | P4 | verified | Feature Phase4AcceptanceTest |
 | AC-21 | Permissions block unauthorized access | RBAC | P1 | verified | Feature test Phase1AcceptanceTest |
-| AC-22 | Daily backup executes | Backup | P5 | implemented | Ops E2E + automated |
-| AC-23 | Backup restore succeeds | Backup | P5 | implemented | Ops E2E + automated |
+| AC-22 | Daily backup executes | Backup | P5 | verified | A9 schedule:list + backup + Phase5AcceptanceTest |
+| AC-23 | Backup restore succeeds | Backup | P5 | verified | A9 labbi:restore-drill PASSED + tests |
 | AC-24 | UI works in Arabic | i18n | P1 | verified | RTL Arabic shell assert + manual QA |
-| AC-25 | UIs work on target browsers | Frontend | P5 | implemented | Cross-browser QA (A9 re-confirm) |
+| AC-25 | UIs work on target browsers | Frontend | P5 | verified | A9 Chrome+Firefox; Edge/Safari not claimed |
 
 ---
 
