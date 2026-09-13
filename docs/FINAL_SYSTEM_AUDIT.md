@@ -1,108 +1,104 @@
-# LabBI — Final System Audit (Phase 5 implementer)
+# LabBI — Final System Audit (Phase 5 — A9 independent update)
 
 **Date (UTC):** 2026-09-13  
-**Scope:** Production-readiness implementation review  
-**Verdict:** Phase 5 **implementer-complete**. **Not** LABBI PRODUCTION READY pending independent A8 + A9.
+**Auditor:** A9 independent final QA (`bc-0d26c027-787b-5aea-9428-6a4868c1d129`)  
+**Branch:** `cursor/phase5-security-ops-audit-5e79` + gap PR `cursor/phase5-a9-qa-gaps-d129`  
+**Verdict:** Phase 5 **PASS WITH NOTES** under independent QA. **Not** LABBI PRODUCTION READY pending A8 consolidation by coordinator.
 
 ---
 
 ## 1. Base confirmation
 
-- `origin/main` includes merged PR **#12** (`c572d4f`) Phase 4 post-merge docs.  
-- Phase 5 built only on that base.
+- Phase 5 built on `origin/main` including merged PR **#12**.  
+- A9 re-ran full suite + ops drills + browser RBAC; did not start new phases/features beyond minimal gap tests.
 
 ---
 
-## 2. Data integrity (clinical → BI)
+## 2. Data integrity (clinical → BI → ops)
 
-| Chain | Status |
+| Chain | A9 status |
 |---|---|
-| Patient → Order → Sample → Result → Review/Approve | Intact (P1–P2 regression) |
-| Critical alerts from engine only | Intact |
-| Notifications / PDF after approve | Intact (P3) |
-| BI / TAT / comparison read approved/stored data | Intact (P4) |
-| Soft deletes on patients | Preserved; restore drill restores rows |
-| Orphan destruction | No hard-delete cascades added in P5 beyond existing FKs |
-| Audit append-only | Enforced in model |
+| Patient → Order → Sample → Result → Review/Approve | **PASS** (P1–P2 + Phase5A9QaGapTest) |
+| Critical alerts from engine only | **PASS** |
+| Notifications / PDF after approve | **PASS** (P3 + A9 gap) |
+| BI / TAT / comparison read approved data | **PASS** (P4) |
+| Audit append-only + Admin UI | **PASS** |
+| Backup → restore drill | **PASS** (CLI + tests) |
+| Soft deletes / restore of patients | **PASS** |
 
 ---
 
 ## 3. Database production review
 
-- FKs present on clinical/RBAC tables from P1–P3 migrations  
-- Uniques: medical file number, order number, sample number, emails  
-- Soft deletes: patients  
-- Phase 4 BI indexes + Phase 5 audit `(created_at)`, `(user_id, created_at)` + `backups` indexes  
-- **No schema redesign** without verified problem  
+Unchanged from implementer audit; A9 confirms migrations through `2026_09_13_500000_create_phase5_ops_tables` apply cleanly on SQLite test + local seed.
 
 ---
 
-## 4. Performance smoke (notes)
+## 4. Performance smoke
 
-| Area | Observation |
-|---|---|
-| Patient/order lists | Paginated |
-| Audit UI | Paginated (30) + filters |
-| Backup list | Paginated (25) |
-| BI / operational / critical | Bounded windows (D-022); SQL aggregates for TAT |
-| Comparison | Patient-scoped queries |
-| Queues | Async jobs for deliveries — run workers in prod |
-| N+1 | Audit/Backup eager-load `user` / creator; watch delivery admin if volume grows |
-| Unbounded | Login throttle prevents auth floods; BI max 366-day span |
-
-No invented SLA numbers.
+Paginated audit/backup/BI windows observed. No invented SLA numbers. NFR-PERF-* remain smoke/planning — **not** falsely marked PASS.
 
 ---
 
 ## 5. File / storage security
 
-- Default `local` disk root = `storage/app/private`  
-- Uploads MIME/size capped  
-- Downloads authenticated + ACL  
-- Public URL guessing returns 403/404 (tested)  
+Private disk; attachment public guessing returns 403/404 (Phase5AcceptanceTest). Downloads ACL-gated (P2/P3).
 
 ---
 
 ## 6. Cross-browser / responsive (AC-25)
 
-| Browser | Implementer status |
+| Browser | A9 status |
 |---|---|
-| Chrome | Evidence screenshots (Audit/Backup UI) |
-| Edge | Expected parity (Chromium) — A9 confirm |
-| Firefox | Expected parity — A9 confirm |
-| Safari | **Not claimed** unless A9 tests it |
+| Chrome | **PASS** — desktop + mobile screenshots |
+| Firefox | **PASS** — login page screenshot (portable 128.0.3) |
+| Edge | **Not available** in QA VM — **not claimed** |
+| Safari | **Not tested** — **not claimed** |
 
-RTL layout uses existing responsive CSS (`max-width: 960px` single column).
+RTL Arabic Admin Audit/Backup/BI/Critical/Settings confirmed.
 
 ---
 
 ## 7. Scope check
 
-| Excluded | Present in P5? |
+| Excluded | Present as product feature? |
 |---|---|
 | Automatic diagnosis / AI | **No** |
 | Native mobile | **No** |
 | Inventory | **No** |
 | Accounting | **No** |
-| Analyzer integration | **No** (null adapter only) |
+| Analyzer integration | **No** (stub/deferred only) |
+
+A9 route absence test covers common out-of-scope paths.
 
 ---
 
 ## 8. Open gates before PRODUCTION READY
 
-1. Independent **A8** security re-cert  
-2. Independent **A9** final QA (AC-01…25)  
-3. WhatsApp production provider decision  
-4. PDF template polish  
-5. CAT-04 medical catalog sign-off  
-6. Retention policy (GAP-10) stakeholder decision  
+1. Independent **A8** security re-cert (coordinator)  
+2. WhatsApp production provider decision  
+3. PDF template polish  
+4. CAT-04 medical catalog sign-off  
+5. Retention policy (GAP-10)  
+6. Edge/Safari if those are contractual target browsers  
 7. Hosting preference confirmation  
 
 ---
 
 ## 9. Test evidence
 
-```
+```text
 php artisan test
-# 116 passed (696 assertions)
+# Tests: 119 passed (756 assertions)
+# Failures: 0 | Skipped: 0
 ```
+
+Ops:
+
+```text
+php artisan schedule:list   # daily labbi:backup @ 02:15
+php artisan labbi:restore-drill --force  # RESTORE DRILL PASSED
+curl /health → status=ok, checks.database=ok
+```
+
+Screenshots: store `media/phase5-qa-*.png`
