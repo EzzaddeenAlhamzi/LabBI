@@ -37,7 +37,7 @@ class OperationalReportService
 
     /**
      * @return array{
-     *   summary: array<string, int|string|null>,
+     *   summary: array<string, int|string|null|array>,
      *   rows: LengthAwarePaginator,
      *   filters: BiReportFilters,
      *   limitations: list<string>
@@ -45,10 +45,89 @@ class OperationalReportService
      */
     public function ordersReport(BiReportFilters $filters, int $perPage = 25): array
     {
+        $filters = $filters->ensureReportingWindow();
+
         $query = TestOrder::query()
             ->with(['patient', 'doctor.user', 'department', 'items.test', 'samples', 'results'])
             ->orderByDesc('ordered_at');
 
+        $this->applyFilters($query, $filters);
+
+        $ordersCount = (clone $query)->count();
+
+        $statusCounts = (clone $query)
+            ->reorder()
+            ->selectRaw('status, COUNT(*) as aggregate_count')
+            ->groupBy('status')
+            ->pluck('aggregate_count', 'status')
+            ->map(fn ($c) => (int) $c)
+            ->all();
+
+        $orderIdsSub = (clone $query)->reorder()->select('test_orders.id');
+        $orderTat = $this->tat->averageOrderTatFromQuery($query);
+
+        $approvedResults = Result::query()
+            ->where('status', Result::STATUS_APPROVED)
+            ->whereIn('test_order_id', $orderIdsSub)
+            ->count();
+
+        $criticalLinked = CriticalAlert::query()
+            ->whereIn('test_order_id', $orderIdsSub)
+            ->count();
+
+        $limitations = [];
+        if ($orderTat['sample_count'] === 0 && $ordersCount > 0) {
+            $limitations[] = 'لا تتوفر طوابع كافية لاحتساب متوسط زمن إنجاز الطلب في الفترة.';
+        }
+
+        $rows = $query->paginate($perPage)->withQueryString();
+        $rows->getCollection()->transform(function (TestOrder $order) {
+            $tat = $this->tat->orderIntervals($order);
+
+            return [
+                'order' => $order,
+                'tat_seconds' => $tat['intervals']['order_tat']['seconds'] ?? null,
+                'tat_hours' => TATService::formatHours($tat['intervals']['order_tat']['seconds'] ?? null),
+                'limitations' => $tat['limitations'],
+            ];
+        });
+
+        return [
+            'summary' => [
+                'orders_count' => $ordersCount,
+                'by_status' => $statusCounts,
+                'avg_order_tat_seconds' => $orderTat['avg_seconds'],
+                'avg_order_tat_hours' => TATService::formatHours($orderTat['avg_seconds']),
+                'approved_results' => $approvedResults,
+                'critical_linked' => $criticalLinked,
+            ],
+            'rows' => $rows,
+            'filters' => $filters,
+            'limitations' => $limitations,
+        ];
+    }
+
+    /**
+     * Lightweight status volume series for optional charts — same backend metrics as cards.
+     *
+     * @return Collection<int, array{status: string, label: string, count: int}>
+     */
+    public function statusVolume(BiReportFilters $filters): Collection
+    {
+        $filters = $filters->ensureReportingWindow();
+
+        $query = TestOrder::query()->selectRaw('status, COUNT(*) as aggregate_count');
+        $this->applyFilters($query, $filters);
+
+        return $query->groupBy('status')->get()->map(fn ($row) => [
+            'status' => $row->status,
+            'label' => TestOrder::statusLabel($row->status),
+            'count' => (int) $row->aggregate_count,
+        ]);
+    }
+
+    private function applyFilters($query, BiReportFilters $filters): void
+    {
         if ($filters->dateFrom) {
             $query->where('ordered_at', '>=', $filters->dateFrom);
         }
@@ -70,72 +149,5 @@ class OperationalReportService
         if ($filters->patientId) {
             $query->where('patient_id', $filters->patientId);
         }
-
-        $allForSummary = (clone $query)->get();
-        $aggregate = $this->tat->aggregate($allForSummary);
-
-        $statusCounts = $allForSummary->groupBy('status')->map->count()->all();
-
-        $rows = $query->paginate($perPage)->withQueryString();
-        $rows->getCollection()->transform(function (TestOrder $order) {
-            $tat = $this->tat->orderIntervals($order);
-
-            return [
-                'order' => $order,
-                'tat_seconds' => $tat['intervals']['order_tat']['seconds'] ?? null,
-                'tat_hours' => TATService::formatHours($tat['intervals']['order_tat']['seconds'] ?? null),
-                'limitations' => $tat['limitations'],
-            ];
-        });
-
-        return [
-            'summary' => [
-                'orders_count' => $allForSummary->count(),
-                'by_status' => $statusCounts,
-                'avg_order_tat_seconds' => $aggregate['avg_order_tat_seconds'],
-                'avg_order_tat_hours' => TATService::formatHours($aggregate['avg_order_tat_seconds']),
-                'approved_results' => Result::query()
-                    ->where('status', Result::STATUS_APPROVED)
-                    ->whereIn('test_order_id', $allForSummary->pluck('id'))
-                    ->count(),
-                'critical_linked' => CriticalAlert::query()
-                    ->whereIn('test_order_id', $allForSummary->pluck('id'))
-                    ->count(),
-            ],
-            'rows' => $rows,
-            'filters' => $filters,
-            'limitations' => $aggregate['limitations'],
-        ];
-    }
-
-    /**
-     * Lightweight status volume series for optional charts — same backend metrics as cards.
-     *
-     * @return Collection<int, array{status: string, label: string, count: int}>
-     */
-    public function statusVolume(BiReportFilters $filters): Collection
-    {
-        $query = TestOrder::query()->selectRaw('status, COUNT(*) as aggregate_count');
-        if ($filters->dateFrom) {
-            $query->where('ordered_at', '>=', $filters->dateFrom);
-        }
-        if ($filters->dateTo) {
-            $query->where('ordered_at', '<=', $filters->dateTo);
-        }
-        if ($filters->departmentId) {
-            $query->where('department_id', $filters->departmentId);
-        }
-        if ($filters->doctorId) {
-            $query->where('doctor_id', $filters->doctorId);
-        }
-        if ($filters->testId) {
-            $query->whereHas('items', fn ($q) => $q->where('test_id', $filters->testId));
-        }
-
-        return $query->groupBy('status')->get()->map(fn ($row) => [
-            'status' => $row->status,
-            'label' => TestOrder::statusLabel($row->status),
-            'count' => (int) $row->aggregate_count,
-        ]);
     }
 }

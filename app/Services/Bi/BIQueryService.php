@@ -10,6 +10,7 @@ use App\Models\LabTest;
 use App\Models\Patient;
 use App\Models\Sample;
 use App\Models\TestOrder;
+use App\Models\TestOrderItem;
 use Carbon\Carbon;
 
 /**
@@ -33,7 +34,7 @@ class BIQueryService
      */
     public function dashboard(?BiReportFilters $filters = null): array
     {
-        $filters ??= new BiReportFilters;
+        $filters = ($filters ?? new BiReportFilters)->ensureReportingWindow();
         $todayStart = Carbon::today();
         $todayEnd = Carbon::today()->endOfDay();
 
@@ -68,6 +69,8 @@ class BIQueryService
     }
 
     /**
+     * Period metrics via DB counts / SQL TAT averages — no full-history hydrate.
+     *
      * @return array{
      *   tests_in_period: int,
      *   orders_in_period: int,
@@ -83,39 +86,44 @@ class BIQueryService
      */
     public function performanceMetrics(BiReportFilters $filters): array
     {
-        $ordersQuery = TestOrder::query()->with(['samples', 'results']);
+        $filters = $filters->ensureReportingWindow();
+
+        $ordersQuery = TestOrder::query();
         $this->applyOrderFilters($ordersQuery, $filters);
-        $orders = $ordersQuery->get();
 
         $alertsQuery = CriticalAlert::query();
-        if ($filters->dateFrom) {
-            $alertsQuery->where('discovered_at', '>=', $filters->dateFrom);
-        }
-        if ($filters->dateTo) {
-            $alertsQuery->where('discovered_at', '<=', $filters->dateTo);
-        }
-        if ($filters->testId) {
-            $alertsQuery->where('test_id', $filters->testId);
-        }
-        if ($filters->doctorId) {
-            $alertsQuery->where('doctor_id', $filters->doctorId);
-        }
-        $alerts = $alertsQuery->get();
+        $this->applyAlertFilters($alertsQuery, $filters);
 
-        $aggregate = $this->tat->aggregate($orders, $alerts);
+        $ordersInPeriod = (clone $ordersQuery)->count();
+        $criticalInPeriod = (clone $alertsQuery)->count();
+        $testsInPeriod = TestOrderItem::query()
+            ->whereIn('test_order_id', (clone $ordersQuery)->reorder()->select('test_orders.id'))
+            ->count();
 
-        $testsInPeriod = $orders->sum(fn (TestOrder $o) => $o->items()->count());
+        $orderTat = $this->tat->averageOrderTatFromQuery($ordersQuery);
+        $criticalTat = $this->tat->averageCriticalHandlingFromQuery($alertsQuery);
+
+        $limitations = [];
+        if ($orderTat['sample_count'] === 0 && $ordersInPeriod > 0) {
+            $limitations[] = 'لا تتوفر طوابع كافية لاحتساب متوسط زمن إنجاز الطلب في الفترة.';
+        }
+        if ($criticalTat['sample_count'] === 0 && $criticalInPeriod > 0) {
+            $limitations[] = 'لا تتوفر طوابع كافية لاحتساب متوسط معالجة الحالات الحرجة في الفترة.';
+        }
 
         return [
-            'tests_in_period' => (int) $testsInPeriod,
-            'orders_in_period' => $orders->count(),
-            'critical_in_period' => $alerts->count(),
-            'avg_order_tat_seconds' => $aggregate['avg_order_tat_seconds'],
-            'avg_order_tat_hours' => TATService::formatHours($aggregate['avg_order_tat_seconds']),
-            'avg_critical_handling_seconds' => $aggregate['avg_critical_handling_seconds'],
-            'avg_critical_handling_hours' => TATService::formatHours($aggregate['avg_critical_handling_seconds']),
-            'tat_sample_counts' => $aggregate['sample_counts'],
-            'limitations' => $aggregate['limitations'],
+            'tests_in_period' => $testsInPeriod,
+            'orders_in_period' => $ordersInPeriod,
+            'critical_in_period' => $criticalInPeriod,
+            'avg_order_tat_seconds' => $orderTat['avg_seconds'],
+            'avg_order_tat_hours' => TATService::formatHours($orderTat['avg_seconds']),
+            'avg_critical_handling_seconds' => $criticalTat['avg_seconds'],
+            'avg_critical_handling_hours' => TATService::formatHours($criticalTat['avg_seconds']),
+            'tat_sample_counts' => [
+                'order_tat' => $orderTat['sample_count'],
+                'critical_handling' => $criticalTat['sample_count'],
+            ],
+            'limitations' => $limitations,
             'period' => [
                 'from' => $filters->dateFrom?->toDateString(),
                 'to' => $filters->dateTo?->toDateString(),
@@ -145,6 +153,22 @@ class BIQueryService
         }
         if ($filters->patientId) {
             $query->where('patient_id', $filters->patientId);
+        }
+    }
+
+    private function applyAlertFilters($query, BiReportFilters $filters): void
+    {
+        if ($filters->dateFrom) {
+            $query->where('discovered_at', '>=', $filters->dateFrom);
+        }
+        if ($filters->dateTo) {
+            $query->where('discovered_at', '<=', $filters->dateTo);
+        }
+        if ($filters->testId) {
+            $query->where('test_id', $filters->testId);
+        }
+        if ($filters->doctorId) {
+            $query->where('doctor_id', $filters->doctorId);
         }
     }
 }

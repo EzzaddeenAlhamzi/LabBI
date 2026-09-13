@@ -81,8 +81,9 @@
 | Admin BI / Operational / Critical UI (RTL) | done | A6 screens |
 | Doctor Historical Comparison UI (RTL) | done | A6 screen |
 | Index / timestamp migration (single set) | done | `2026_09_12_400000_create_phase4_bi_indexes.php` |
-| Automated tests (P1–P4) | done | **89 passed / 489 assertions** |
+| Automated tests (P1–P4) | done | **100 passed / 610 assertions** (incl. A8 Medium ACL/TAT) |
 | Completion + acceptance reports | done | `docs/PHASE4_*` |
+| A8 Medium ACL + TAT windows | done | D-022; `Phase4A8MediumFixTest` |
 
 ---
 
@@ -91,7 +92,7 @@
 - Phase 1: **approved** on `main`.  
 - Phase 2 AC-07…AC-13 (+ AC-18 partial): **approved** (post-merge verification).  
 - Phase 3 AC-14…AC-17 (+ AC-18 PDF/archive, AC-11/12 notify): **approved** (PR #8 post-merge).  
-- Phase 4 AC-19 / AC-20 (+ CMP-*, BI-*, CRT-11/12): **implementer verified**; A8/A9 gate remaining.  
+- Phase 4 AC-19 / AC-20 (+ CMP-*, BI-*, CRT-11/12): **implementer + A9 gap tests**; A8 Medium ACL/TAT hardenings applied — independent A8/A9 re-review before merge.  
 - Phase 5: **not started**.
 
 ---
@@ -130,3 +131,4 @@ Test command: `php artisan test`
 | 2026-09-12 | Phase 3 A5/A6 implementer-complete; draft PR; A8/A9 then post-merge PR #8 |
 | 2026-09-12 | Phase 3 approved (PR #8); Phase 4 started on `cursor/phase4-bi-reporting-b1f0` |
 | 2026-09-12 | Phase 4 A7/A6 implementer-complete; 89 tests; draft PR; A8/A9 required before Phase 5 |
+| 2026-09-13 | Phase 4 A8 Medium fixes (BI ACL OR-gates + bounded TAT/SQL aggregates); 100 tests; D-022 |

@@ -15,17 +15,23 @@
 | Suite | Result |
 |---|---|
 | Baseline Phase 4 branch | 89 passed / 489 assertions |
-| After A9 gap tests | **93 passed / 560 assertions** |
+| After A9 gap tests | 93 passed / 560 assertions |
+| After A8 Medium fixes (ACL + TAT windows) | **100 passed / 610 assertions** |
 | Unit (Critical, Workflow, TAT, Trends, OrderStatus) | PASS |
 | Feature Phase1AcceptanceTest | 10 PASS |
 | Feature Phase2AcceptanceTest | 16 PASS |
 | Feature Phase3AcceptanceTest | 17 PASS |
 | Feature Phase4AcceptanceTest | 9 PASS |
-| Feature Phase4A9QaGapTest (new) | **4 PASS** |
+| Feature Phase4A9QaGapTest | 4 PASS |
+| Feature Phase4A8MediumFixTest (new) | **7 PASS** |
 
 ```bash
 php artisan test
-# Tests: 93 passed (560 assertions)
+# Tests: 100 passed (610 assertions)
+
+php artisan test --filter=Phase4A8MediumFixTest
+php artisan test --filter=Phase4AcceptanceTest
+php artisan test --filter=Phase4A9QaGapTest
 ```
 
 ---
@@ -53,14 +59,16 @@ php artisan test
 
 | Check | Result |
 |---|---|
-| Full `php artisan test` P1–P4 | **PASS** (93 / 560) |
-| Metric correctness with controlled data (not page-load only) | **PASS** — expected cards/TAT/critical/trend vs services + HTTP |
+| Full `php artisan test` P1–P4 | **PASS** (100 / 610) |
+| Metric correctness with controlled data (not page-load only) | **PASS** — expected cards/TAT/critical/trend vs services + HTTP; A8 SQL aggregates assert same formulas |
 | Historical comparison: approved-only | **PASS** (draft + pending excluded) |
 | Historical comparison: ACL | **PASS** (unrelated doctor blocked; patient forbidden) |
 | Historical comparison: filters | **PASS** (date range) |
 | Historical comparison: incompatible units | **PASS** |
 | Critical dashboard = Phase 2 stored alerts only | **PASS** |
 | Clinical E2E regression (order→sample→result→critical→approve→notify→PDF→visibility) | **PASS** — Phase 4 does not alter flow; BI surfaces reflect post-approval state |
+| A8 Medium ACL (lab/doctor/patient denied Admin BI) | **PASS** — `Phase4A8MediumFixTest` |
+| A8 Medium TAT windows / SQL aggregates | **PASS** — default 30d, max 366d, empty set, formula parity |
 
 ---
 
@@ -79,12 +87,17 @@ Added `tests/Feature/Phase4A9QaGapTest.php`:
 
 None blocking.
 
+### A8 Medium hardenings closed (pre-merge)
+
+1. **M1/M2 ACL:** Admin BI routes require `bi.view` (critical BI no longer ORs `critical.view_all`; `/admin` nests `bi.view`). Lab retains `/lab/critical` only.  
+2. **M3/M4 TAT:** Default 30-day / max 366-day reporting window; SQL TAT averages; no unbounded `get()` for metrics; item counts via subquery (no N+1). See **D-022**.
+
 ### Notes (non-blocking)
 
 1. Order TAT prefers `completed_at`; else latest `approved_at`.
 2. Trends are operational only (non-diagnostic); UI states this.
 3. Charts optional (D-014).
-4. Implementer report claimed 89/489; A9 baseline confirmed, then +4 gap tests → 93/560.
+4. Implementer report claimed 89/489; A9 baseline + gap tests → 93/560; A8 Medium fixes → **100/610**.
 
 ---
 

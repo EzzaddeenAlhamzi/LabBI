@@ -227,6 +227,30 @@ Statuses: `proposed` | `accepted` | `rejected` | `deferred` | `locked`
 
 ---
 
+## D-022 — Phase 4 Admin BI ACL + reporting windows (A8 Medium)
+
+- **Status:** accepted  
+- **Decision:**  
+  - **Authorization matrix (Admin BI):**  
+
+    | Surface | Route | Required permission(s) | Lab tech | Doctor | Patient |
+    |---|---|---|---|---|---|
+    | Admin home BI cards/TAT | `GET /admin` | `bi.view` (nested; outer group alone insufficient) | 403 | 403 | 403 |
+    | BI dashboard | `GET /admin/bi` | `bi.view` | 403 | 403 | 403 |
+    | Operational reports | `GET /admin/reports/operational` | `reports.operational` **OR** `bi.view` | 403 | 403 | 403 |
+    | Critical cases BI | `GET /admin/critical-cases` | `bi.view` **only** (not `critical.view_all`) | 403 | 403 | 403 |
+    | Lab critical ops | `GET /lab/critical` | `critical.view_all` | ✓ | — | — |
+    | Doctor comparison | `GET /doctor/comparison` | `comparison.use` + patient-scoped service ACL | 403 | own patients | 403 |
+
+  - Prefer explicit BI permissions over role ORs. `critical.view_all` / `patients.view_all` must **not** open Admin BI.  
+  - **Reporting window:** when `date_from`/`date_to` omitted on BI/operational/critical reporting filters → default **last 30 inclusive days**; max span **366 inclusive days** (ValidationException). Doctor comparison does **not** force the 30-day default (patient-scoped) but still rejects excessive explicit pairs.  
+  - **TAT aggregates:** summary averages use SQL (`AVG` of the same timestamp formulas as `TATService`); detail rows stay paginated; no fetch-all-then-calc for metrics; no Redis.  
+- **Rationale:** Close A8 M1/M2 privilege creep and M3/M4 unbounded hydrate / N+1.  
+- **Open questions:** None for Phase 4 merge.  
+- **Reversible?** Window lengths tunable; ACL tightening is intentional.
+
+---
+
 ## Locked summary (Phase 1 gate)
 
 | Topic | Lock |
