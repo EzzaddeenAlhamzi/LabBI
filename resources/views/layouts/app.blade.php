@@ -201,6 +201,9 @@
                 <a href="{{ route('admin.bi.index') }}">لوحة ذكاء الأعمال</a>
                 <a href="{{ route('admin.reports.operational') }}">التقارير التشغيلية</a>
                 <a href="{{ route('admin.critical-cases.index') }}">لوحة الحالات الحرجة</a>
+                <a href="{{ route('admin.audit.index') }}">سجل العمليات</a>
+                <a href="{{ route('admin.backups.index') }}">النسخ الاحتياطي</a>
+                <a href="{{ route('admin.settings.index') }}">إعدادات النظام</a>
             @endif
             @if($user->hasRole('lab_technician') || $user->hasRole('admin'))
                 <div class="section">المختبر</div>

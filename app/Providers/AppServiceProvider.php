@@ -10,7 +10,10 @@ use App\Domain\Analyzer\NullAnalyzerIngestionAdapter;
 use App\Domain\WhatsApp\MockWhatsAppGateway;
 use App\Services\PdfReportService;
 use App\Services\ResultApprovalService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,5 +30,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        RateLimiter::for('login', function (Request $request) {
+            $max = (int) config('labbi.security.login_max_attempts', 5);
+
+            return Limit::perMinute($max)->by(strtolower((string) $request->input('email')).'|'.$request->ip());
+        });
     }
 }

@@ -1,6 +1,6 @@
 # LabBI — Implementation Roadmap
 
-**Status:** Phase 1 in progress — Phase 0 decisions locked (see `DECISIONS.md`)  
+**Status:** Phase 5 in progress — Phase 0–4 approved on `main` (PR #12); security/ops/backup implementer track active.  
 Source §48 priorities aligned and expanded with agent parallelization.
 
 ---

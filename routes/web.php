@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\BiDashboardController;
 use App\Http\Controllers\Admin\CriticalCasesController;
 use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
@@ -13,10 +15,12 @@ use App\Http\Controllers\Admin\PatientController as AdminPatientController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RangeController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\Doctor\ComparisonController as DoctorComparisonController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Doctor\OrderController as DoctorOrderController;
@@ -42,9 +46,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('login'));
 
+Route::get('/health', HealthController::class)->name('health');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:login');
 });
 
 Route::middleware(['auth', 'active'])->group(function () {
@@ -145,6 +151,23 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/orders/create', [AdminOrderController::class, 'create'])->middleware('permission:orders.create')->name('orders.create');
             Route::post('/orders', [AdminOrderController::class, 'store'])->middleware('permission:orders.create')->name('orders.store');
             Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        });
+
+        Route::middleware('permission:audit.view')->group(function () {
+            Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
+            Route::get('/audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit.show');
+        });
+
+        Route::middleware('permission:backups.manage')->group(function () {
+            Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+            Route::post('/backups', [BackupController::class, 'store'])->name('backups.store');
+            Route::get('/backups/{backup}', [BackupController::class, 'show'])->name('backups.show');
+            Route::post('/backups/{backup}/restore', [BackupController::class, 'restore'])->name('backups.restore');
+        });
+
+        Route::middleware('permission:settings.manage')->group(function () {
+            Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+            Route::post('/settings/ack', [SettingsController::class, 'touch'])->name('settings.touch');
         });
     });
 
