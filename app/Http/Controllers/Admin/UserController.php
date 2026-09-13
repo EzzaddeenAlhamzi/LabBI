@@ -87,7 +87,20 @@ class UserController extends Controller
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
-        $old = $user->only(['name', 'email', 'phone', 'is_active']);
+        $user->load('roles.permissions');
+        $oldRoles = $user->roles->pluck('code')->sort()->values()->all();
+        $oldPermissions = $user->roles
+            ->flatMap(fn (Role $role) => $role->permissions->pluck('code'))
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        $old = array_merge($user->only(['name', 'email', 'phone', 'is_active']), [
+            'role_codes' => $oldRoles,
+            'permission_codes' => $oldPermissions,
+        ]);
+
         $user->fill([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -99,7 +112,23 @@ class UserController extends Controller
         }
         $user->save();
         $user->roles()->sync([$data['role_id']]);
-        $audit->log('users.update', $user, $old, $user->only(['name', 'email', 'phone', 'is_active']));
+        $user->load('roles.permissions');
+
+        $newRoles = $user->roles->pluck('code')->sort()->values()->all();
+        $newPermissions = $user->roles
+            ->flatMap(fn (Role $role) => $role->permissions->pluck('code'))
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        $new = array_merge($user->only(['name', 'email', 'phone', 'is_active']), [
+            'role_codes' => $newRoles,
+            'permission_codes' => $newPermissions,
+        ]);
+
+        $action = $oldRoles !== $newRoles ? 'users.role_change' : 'users.update';
+        $audit->log($action, $user, $old, $new);
 
         return redirect()->route('admin.users.index')->with('success', 'تم تحديث المستخدم.');
     }

@@ -22,8 +22,27 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
 
-        // Trust reverse-proxy headers when deployed behind TLS terminator.
-        $middleware->trustProxies(at: '*');
+        // Production-aware trusted proxies (TRUSTED_PROXIES env).
+        // Empty/unset → do not trust X-Forwarded-* (prevents client spoofing).
+        // Comma-separated IPs/CIDRs → trust only those edges.
+        // Explicit "*" → trust all (only when the app is unreachable except via a locked reverse proxy).
+        $trustedProxies = env('TRUSTED_PROXIES');
+        if (is_string($trustedProxies) && trim($trustedProxies) !== '') {
+            $at = trim($trustedProxies) === '*'
+                ? '*'
+                : array_values(array_filter(array_map('trim', explode(',', $trustedProxies))));
+
+            if ($at === '*' || $at !== []) {
+                $middleware->trustProxies(
+                    at: $at,
+                    headers: Request::HEADER_X_FORWARDED_FOR
+                        | Request::HEADER_X_FORWARDED_HOST
+                        | Request::HEADER_X_FORWARDED_PORT
+                        | Request::HEADER_X_FORWARDED_PROTO
+                        | Request::HEADER_X_FORWARDED_AWS_ELB
+                );
+            }
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, Request $request) {

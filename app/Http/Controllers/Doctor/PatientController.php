@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
+use App\Services\DoctorPatientAccess;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,14 +25,12 @@ class PatientController extends Controller
         return view('doctor.patients.index', compact('patients'));
     }
 
-    public function show(Request $request, Patient $patient): View
+    public function show(Request $request, Patient $patient, DoctorPatientAccess $access): View
     {
         $doctor = $request->user()->doctor;
         abort_unless($doctor, 403);
 
-        $allowed = $patient->primary_doctor_id === $doctor->id
-            || $patient->orders()->where('doctor_id', $doctor->id)->exists();
-        abort_unless($allowed, 403, 'لا يمكنك الوصول إلى بيانات هذا المريض');
+        $access->assertCanAccess($doctor, $patient);
 
         $patient->load(['orders' => fn ($q) => $q->where('doctor_id', $doctor->id)->with('items.test')]);
 
