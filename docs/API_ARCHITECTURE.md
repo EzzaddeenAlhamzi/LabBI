@@ -116,7 +116,7 @@ Orchestration: `NotificationOrchestrator` + queued jobs (`GenerateResultPdfJob`,
 `GET /admin/critical-cases` (stored critical alerts dashboard),  
 `GET /doctor/comparison` (historical comparison + non-medical trend).  
 Authoritative services: `BIQueryService`, `OperationalReportService`, `HistoricalComparisonService`, `TATService`, `CriticalAnalyticsService`.  
-Filter contract: `App\Domain\Bi\BiReportFilters`.
+Filter contract: `App\Domain\Bi\BiReportFilters` (D-022: default last 30 inclusive days when dates omitted on BI/operational/critical; max span 366 days; doctor comparison does not force the default window).
 
 ### Patient requests
 | Method | Path | Purpose |

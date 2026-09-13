@@ -64,7 +64,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('reports.download');
 
     Route::prefix('admin')->name('admin.')->middleware('permission:users.view,patients.view_all,catalog.manage,orders.view_all,bi.view')->group(function () {
-        Route::get('/', AdminDashboardController::class)->name('dashboard');
+        // Admin BI surfaces require explicit bi.view (or reports.operational where noted).
+        // Do NOT OR with critical.view_all / patients.view_all — lab must not inherit Admin BI.
+        Route::get('/', AdminDashboardController::class)
+            ->middleware('permission:bi.view')
+            ->name('dashboard');
 
         Route::get('/deliveries', [AdminDeliveryController::class, 'index'])
             ->middleware('permission:audit.view,reports.operational,bi.view')
@@ -79,7 +83,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             ->name('reports.operational');
 
         Route::get('/critical-cases', [CriticalCasesController::class, 'index'])
-            ->middleware('permission:bi.view,critical.view_all')
+            ->middleware('permission:bi.view')
             ->name('critical-cases.index');
 
         Route::middleware('permission:users.view')->group(function () {

@@ -72,7 +72,7 @@ Permissions are codes checked by policies. Roles receive sets of permissions (US
 | pdf.generate | ✓ | ✓ | — | — |
 | pdf.download | clinical | clinical | clinical | own |
 | comparison.use | ✓ | — | ✓ | — (or own TBD) |
-| bi.view / operational reports | ✓ | limited lab reports | — | — |
+| bi.view / operational reports | ✓ (`bi.view`, `reports.operational`) | **no Admin BI** (use `/lab/critical` for ops) | — | — |
 | audit.view / backups / settings | ✓ | — | — | — |
 | requests.create | — | — | — | ✓ |
 | requests.manage_doctor | — | — | ✓ | — |

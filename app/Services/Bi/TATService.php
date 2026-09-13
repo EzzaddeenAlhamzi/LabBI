@@ -9,6 +9,8 @@ use App\Models\Sample;
 use App\Models\TestOrder;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * TATService — authoritative turnaround-time calculations from REAL timestamps only.
@@ -258,6 +260,79 @@ class TATService
         }
 
         return number_format($seconds / 3600, 2).' ساعة';
+    }
+
+    /**
+     * DB-side average order TAT matching {@see orderIntervals} formula:
+     * ordered_at → completed_at preferred, else latest approved_at.
+     * Does not hydrate order models.
+     *
+     * @param  Builder<TestOrder>  $ordersQuery
+     * @return array{avg_seconds: ?int, sample_count: int}
+     */
+    public function averageOrderTatFromQuery(Builder $ordersQuery): array
+    {
+        $approved = Result::STATUS_APPROVED;
+        $endSql = "COALESCE(test_orders.completed_at, (
+            SELECT MAX(r.approved_at) FROM results AS r
+            WHERE r.test_order_id = test_orders.id AND r.status = '{$approved}'
+        ))";
+        $diffSql = $this->sqlSecondsBetweenExpr('test_orders.ordered_at', $endSql);
+
+        $row = DB::table('test_orders')
+            ->whereIn('id', (clone $ordersQuery)->reorder()->select('test_orders.id'))
+            ->whereNotNull('test_orders.ordered_at')
+            ->whereRaw("{$endSql} IS NOT NULL")
+            ->whereRaw("{$endSql} >= test_orders.ordered_at")
+            ->selectRaw("AVG({$diffSql}) as avg_seconds, COUNT(*) as sample_count")
+            ->first();
+
+        $avg = $row?->avg_seconds;
+
+        return [
+            'avg_seconds' => $avg === null ? null : (int) round((float) $avg),
+            'sample_count' => (int) ($row?->sample_count ?? 0),
+        ];
+    }
+
+    /**
+     * DB-side average critical handling matching {@see criticalIntervals}:
+     * discovered_at → notified_at preferred, else acknowledged_at.
+     *
+     * @param  Builder<CriticalAlert>  $alertsQuery
+     * @return array{avg_seconds: ?int, sample_count: int}
+     */
+    public function averageCriticalHandlingFromQuery(Builder $alertsQuery): array
+    {
+        $endSql = 'COALESCE(critical_alerts.notified_at, critical_alerts.acknowledged_at)';
+        $diffSql = $this->sqlSecondsBetweenExpr('critical_alerts.discovered_at', $endSql);
+
+        $row = DB::table('critical_alerts')
+            ->whereIn('id', (clone $alertsQuery)->reorder()->select('critical_alerts.id'))
+            ->whereNotNull('critical_alerts.discovered_at')
+            ->whereRaw("{$endSql} IS NOT NULL")
+            ->whereRaw("{$endSql} >= critical_alerts.discovered_at")
+            ->selectRaw("AVG({$diffSql}) as avg_seconds, COUNT(*) as sample_count")
+            ->first();
+
+        $avg = $row?->avg_seconds;
+
+        return [
+            'avg_seconds' => $avg === null ? null : (int) round((float) $avg),
+            'sample_count' => (int) ($row?->sample_count ?? 0),
+        ];
+    }
+
+    /** Portable seconds-between expression (SQLite tests + MySQL production). */
+    public function sqlSecondsBetweenExpr(string $startSql, string $endSql): string
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            return "CAST((julianday({$endSql}) - julianday({$startSql})) * 86400 AS REAL)";
+        }
+
+        return "TIMESTAMPDIFF(SECOND, {$startSql}, {$endSql})";
     }
 
     /** @param  list<int>  $values */

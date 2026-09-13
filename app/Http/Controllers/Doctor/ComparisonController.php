@@ -19,8 +19,12 @@ class ComparisonController extends Controller
         $patients = $comparison->accessiblePatients($actor);
         $tests = LabTest::query()->where('is_active', true)->orderBy('name_ar')->get();
 
+        // Comparison is patient-scoped — do not force the BI reporting default window.
+        // Explicit date pairs still respect MAX_PERIOD_DAYS (DoS bound).
         $filters = BiReportFilters::fromArray(
             $request->only(['date_from', 'date_to', 'test_id', 'patient_id']),
+            [],
+            applyDefaultPeriod: false,
         );
 
         $result = null;

@@ -36,10 +36,56 @@ class CriticalAnalyticsService
      */
     public function dashboard(BiReportFilters $filters, int $perPage = 25): array
     {
+        $filters = $filters->ensureReportingWindow();
+
         $query = CriticalAlert::query()
             ->with(['patient', 'test.department', 'doctor.user', 'order', 'result'])
             ->orderByDesc('discovered_at');
 
+        $this->applyFilters($query, $filters);
+
+        $total = (clone $query)->count();
+        $open = (clone $query)->where('status', CriticalAlert::STATUS_OPEN)->count();
+        $acknowledged = (clone $query)->where('status', CriticalAlert::STATUS_ACKNOWLEDGED)->count();
+        $closed = (clone $query)->where('status', CriticalAlert::STATUS_CLOSED)->count();
+
+        $handling = $this->tat->averageCriticalHandlingFromQuery($query);
+
+        $limitations = [];
+        if ($handling['sample_count'] === 0 && $total > 0) {
+            $limitations[] = 'لا تتوفر طوابع كافية لاحتساب متوسط معالجة الحالات الحرجة في الفترة.';
+        }
+
+        $rows = $query->paginate($perPage)->withQueryString();
+        $rows->getCollection()->transform(function (CriticalAlert $alert) {
+            $intervals = $this->tat->criticalIntervals($alert);
+
+            return [
+                'alert' => $alert,
+                'handling_seconds' => $intervals['handling_seconds'],
+                'handling_hours' => TATService::formatHours($intervals['handling_seconds']),
+                'discovery_to_notify_seconds' => $intervals['discovery_to_notify_seconds'],
+                'limitations' => $intervals['limitations'],
+            ];
+        });
+
+        return [
+            'summary' => [
+                'total' => $total,
+                'open' => $open,
+                'acknowledged' => $acknowledged,
+                'closed' => $closed,
+                'avg_handling_seconds' => $handling['avg_seconds'],
+                'avg_handling_hours' => TATService::formatHours($handling['avg_seconds']),
+            ],
+            'rows' => $rows,
+            'filters' => $filters,
+            'limitations' => $limitations,
+        ];
+    }
+
+    private function applyFilters($query, BiReportFilters $filters): void
+    {
         if ($filters->dateFrom) {
             $query->where('discovered_at', '>=', $filters->dateFrom);
         }
@@ -61,35 +107,5 @@ class CriticalAnalyticsService
         if ($filters->patientId) {
             $query->where('patient_id', $filters->patientId);
         }
-
-        $all = (clone $query)->get();
-        $aggregate = $this->tat->aggregate([], $all);
-
-        $rows = $query->paginate($perPage)->withQueryString();
-        $rows->getCollection()->transform(function (CriticalAlert $alert) {
-            $intervals = $this->tat->criticalIntervals($alert);
-
-            return [
-                'alert' => $alert,
-                'handling_seconds' => $intervals['handling_seconds'],
-                'handling_hours' => TATService::formatHours($intervals['handling_seconds']),
-                'discovery_to_notify_seconds' => $intervals['discovery_to_notify_seconds'],
-                'limitations' => $intervals['limitations'],
-            ];
-        });
-
-        return [
-            'summary' => [
-                'total' => $all->count(),
-                'open' => $all->where('status', CriticalAlert::STATUS_OPEN)->count(),
-                'acknowledged' => $all->where('status', CriticalAlert::STATUS_ACKNOWLEDGED)->count(),
-                'closed' => $all->where('status', CriticalAlert::STATUS_CLOSED)->count(),
-                'avg_handling_seconds' => $aggregate['avg_critical_handling_seconds'],
-                'avg_handling_hours' => TATService::formatHours($aggregate['avg_critical_handling_seconds']),
-            ],
-            'rows' => $rows,
-            'filters' => $filters,
-            'limitations' => $aggregate['limitations'],
-        ];
     }
 }
