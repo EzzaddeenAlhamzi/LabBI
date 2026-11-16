@@ -121,6 +121,10 @@ class DatabaseSeeder extends Seeder
         );
         $admin->roles()->syncWithoutDetaching([$roleModels['admin']->id]);
 
+        // Light canonical demo users/catalog only.
+        // Volume profiles (SMALL/MEDIUM/LARGE) are opt-in via:
+        //   php artisan db:seed --class=LabBIDemoSeeder
+        // Do NOT call LabBIDemoSeeder from here.
         $this->call([
             DemoDataSeeder::class,
         ]);
