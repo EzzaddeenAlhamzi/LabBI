@@ -66,6 +66,17 @@ Password for all: `password`
 | lab@labbi.local | Lab technician |
 | patient@labbi.local | Patient |
 
+### Volume demo seeding (optional)
+
+Default `php artisan db:seed` stays light (RBAC + four users + HB/GLU). For SMALL/MEDIUM/LARGE synthetic workflows:
+
+```bash
+# APP_ENV must NOT be production
+LABBI_DEMO_PROFILE=small LABBI_DEMO_SEED=42 php artisan db:seed --class=LabBIDemoSeeder
+```
+
+See [DEMO_SEEDING_GUIDE.md](./DEMO_SEEDING_GUIDE.md). Never run volume seeding in production.
+
 ---
 
 ## Verify
