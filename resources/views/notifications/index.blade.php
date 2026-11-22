@@ -1,4 +1,4 @@
-@php($isAdmin = auth()->user()?->hasRole('admin'))
+@php($isAdmin = auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('lab_technician'))
 @extends($isAdmin ? 'layouts.admin' : 'layouts.app')
 @section('title', 'الإشعارات')
 @section('heading', 'مركز التنبيهات')

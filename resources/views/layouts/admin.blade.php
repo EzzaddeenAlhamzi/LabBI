@@ -119,8 +119,11 @@
                 <a href="{{ route('lab.samples.index') }}" class="{{ request()->routeIs('lab.samples.index') ? 'active' : '' }}">
                     <x-icon name="test-tube" /><span>العينات</span>
                 </a>
-                <a href="{{ route('lab.results.entry.index') }}" class="{{ request()->routeIs('lab.results.*') ? 'active' : '' }}">
+                <a href="{{ route('lab.results.entry.index') }}" class="{{ request()->routeIs('lab.results.entry*') ? 'active' : '' }}">
                     <x-icon name="flask-conical" /><span>إدخال النتائج</span>
+                </a>
+                <a href="{{ route('lab.results.review.index') }}" class="{{ request()->routeIs('lab.results.review*') ? 'active' : '' }}">
+                    <x-icon name="check-circle" /><span>مراجعة النتائج</span>
                 </a>
                 <a href="{{ route('lab.critical.index') }}" class="{{ request()->routeIs('lab.critical.*') ? 'active' : '' }}">
                     <x-icon name="alert" /><span>التنبيهات الحرجة</span>
