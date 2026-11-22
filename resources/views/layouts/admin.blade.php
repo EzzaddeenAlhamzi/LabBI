@@ -171,6 +171,23 @@
                 </a>
             </div>
             @endif
+            @if($user->hasRole('patient'))
+            <div class="nav-group">
+                <p class="nav-group-title">بوابتي</p>
+                <a href="{{ route('patient.dashboard') }}" class="{{ request()->routeIs('patient.dashboard') ? 'active' : '' }}">
+                    <x-icon name="home" /><span>لوحتي</span>
+                </a>
+                <a href="{{ route('patient.tests.index') }}" class="{{ request()->routeIs('patient.tests.*') || request()->routeIs('patient.results.*') ? 'active' : '' }}">
+                    <x-icon name="flask-conical" /><span>فحوصاتي ونتائجي</span>
+                </a>
+                <a href="{{ route('patient.requests.index') }}" class="{{ request()->routeIs('patient.requests.*') ? 'active' : '' }}">
+                    <x-icon name="mail" /><span>طلباتي للطبيب</span>
+                </a>
+                <a href="{{ route('patient.profile') }}" class="{{ request()->routeIs('patient.profile') || request()->routeIs('patient.records.*') ? 'active' : '' }}">
+                    <x-icon name="user" /><span>ملفي الطبي</span>
+                </a>
+            </div>
+            @endif
             <div class="nav-group">
                 <p class="nav-group-title">الحساب</p>
                 <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}">
