@@ -4,20 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'خطأ' }} — LabBI</title>
-    <style>
-        body { font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif; background:#f3f6f4; color:#14201a; margin:0; min-height:100vh; display:grid; place-items:center; padding:2rem; }
-        .box { background:#fff; border:1px solid #c9d8cf; border-radius:1rem; padding:2rem; max-width:480px; width:100%; box-shadow:0 10px 30px rgba(20,32,26,.06); }
-        h1 { font-family: Cairo, sans-serif; margin-top:0; color:#0f6b4c; }
-        a { color:#0f6b4c; }
-        .code { color:#4d6358; font-size:.9rem; }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 </head>
-<body>
-<div class="box">
-    <p class="code">LabBI · {{ $code ?? '' }}</p>
-    <h1>{{ $title ?? 'حدث خطأ' }}</h1>
-    <p>{{ $message ?? 'تعذر إكمال الطلب. حاول لاحقاً أو راجع المسؤول.' }}</p>
-    <p><a href="{{ url('/') }}">العودة للرئيسية</a></p>
+<body style="display:grid;place-items:center;padding:2rem">
+<div class="card" style="max-width:460px;width:100%;text-align:center;padding:2.5rem 2rem">
+    <div class="brand-logo" style="width:56px;height:56px;margin:0 auto 1.1rem;border-radius:14px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px">
+            <path d="M9 3v7.2a3 3 0 0 0 6 0V3"/><path d="M12 13.2V21"/><path d="M7.5 21h9"/>
+        </svg>
+    </div>
+    <p class="muted small" style="letter-spacing:.08em;text-transform:uppercase">LabBI · {{ $code ?? '' }}</p>
+    <h1 style="font-size:1.5rem;margin:.4rem 0 .6rem">{{ $title ?? 'حدث خطأ' }}</h1>
+    <p class="muted" style="margin-bottom:1.4rem">{{ $message ?? 'تعذر إكمال الطلب. حاول لاحقاً أو راجع المسؤول.' }}</p>
+    <a class="btn" href="{{ url('/') }}">العودة للرئيسية</a>
 </div>
 </body>
 </html>
