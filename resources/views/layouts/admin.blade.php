@@ -139,6 +139,38 @@
                 </a>
             </div>
             @endif
+            @if($user->hasRole('doctor'))
+            <div class="nav-group">
+                <p class="nav-group-title">الطبيب</p>
+                <a href="{{ route('doctor.dashboard') }}" class="{{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}">
+                    <x-icon name="doctor" /><span>لوحة الطبيب</span>
+                </a>
+                <a href="{{ route('doctor.patients.index') }}" class="{{ request()->routeIs('doctor.patients.*') ? 'active' : '' }}">
+                    <x-icon name="patients" /><span>مرضاي</span>
+                </a>
+                <a href="{{ route('doctor.orders.create') }}" class="{{ request()->routeIs('doctor.orders.create') ? 'active' : '' }}">
+                    <x-icon name="plus" /><span>إنشاء طلب فحص</span>
+                </a>
+                <a href="{{ route('doctor.orders.index') }}" class="{{ request()->routeIs('doctor.orders.index') || request()->routeIs('doctor.orders.show') ? 'active' : '' }}">
+                    <x-icon name="clipboard" /><span>طلباتي</span>
+                </a>
+                <a href="{{ route('doctor.results.index') }}" class="{{ request()->routeIs('doctor.results.*') ? 'active' : '' }}">
+                    <x-icon name="flask-conical" /><span>النتائج المعتمدة</span>
+                </a>
+                <a href="{{ route('doctor.comparison.index') }}" class="{{ request()->routeIs('doctor.comparison.*') ? 'active' : '' }}">
+                    <x-icon name="chart" /><span>المقارنة التاريخية</span>
+                </a>
+                <a href="{{ route('doctor.critical.index') }}" class="{{ request()->routeIs('doctor.critical.*') ? 'active' : '' }}">
+                    <x-icon name="alert-octagon" /><span>النتائج الحرجة</span>
+                </a>
+                <a href="{{ route('doctor.reports.index') }}" class="{{ request()->routeIs('doctor.reports.*') ? 'active' : '' }}">
+                    <x-icon name="file-text" /><span>التقارير PDF</span>
+                </a>
+                <a href="{{ route('doctor.requests.index') }}" class="{{ request()->routeIs('doctor.requests.*') ? 'active' : '' }}">
+                    <x-icon name="mail" /><span>طلبات المرضى</span>
+                </a>
+            </div>
+            @endif
             <div class="nav-group">
                 <p class="nav-group-title">الحساب</p>
                 <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}">
