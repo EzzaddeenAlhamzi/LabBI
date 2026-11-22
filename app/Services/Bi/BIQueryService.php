@@ -131,6 +131,83 @@ class BIQueryService
         ];
     }
 
+    /**
+     * Daily order counts for dashboard charts — read-only aggregation.
+     *
+     * @return array{labels: list<string>, counts: list<int>, total: int}
+     */
+    public function ordersDailySeries(BiReportFilters $filters, int $days = 14): array
+    {
+        $filters = $filters->ensureReportingWindow();
+        $start = Carbon::today()->subDays($days - 1)->startOfDay();
+
+        $rows = TestOrder::query()
+            ->where('ordered_at', '>=', $start)
+            ->when($filters->dateFrom, fn ($q) => $q->where('ordered_at', '>=', $filters->dateFrom))
+            ->when($filters->dateTo, fn ($q) => $q->where('ordered_at', '<=', $filters->dateTo))
+            ->when($filters->testId, fn ($q) => $q->whereHas('items', fn ($i) => $i->where('test_id', $filters->testId)))
+            ->when($filters->doctorId, fn ($q) => $q->where('doctor_id', $filters->doctorId))
+            ->when($filters->departmentId, fn ($q) => $q->where('department_id', $filters->departmentId))
+            ->when($filters->status, fn ($q) => $q->where('status', $filters->status))
+            ->when($filters->patientId, fn ($q) => $q->where('patient_id', $filters->patientId))
+            ->selectRaw('DATE(ordered_at) as day, COUNT(*) as aggregate_count')
+            ->groupBy('day')
+            ->pluck('aggregate_count', 'day');
+
+        $labels = [];
+        $counts = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $day = Carbon::today()->subDays($i);
+            $key = $day->toDateString();
+            $labels[] = $day->format('d/m');
+            $counts[] = (int) ($rows[$key] ?? 0);
+        }
+
+        return ['labels' => $labels, 'counts' => $counts, 'total' => array_sum($counts)];
+    }
+
+    /**
+     * Order status distribution for donut charts — read-only aggregation.
+     *
+     * @return list<array{status: string, label: string, count: int}>
+     */
+    public function statusBreakdown(BiReportFilters $filters): array
+    {
+        $filters = $filters->ensureReportingWindow();
+
+        $query = TestOrder::query()->selectRaw('status, COUNT(*) as aggregate_count');
+        $this->applyOrderFilters($query, $filters);
+
+        return $query->groupBy('status')->get()
+            ->map(fn ($row) => [
+                'status' => $row->status,
+                'label' => TestOrder::statusLabel($row->status),
+                'count' => (int) $row->aggregate_count,
+            ])
+            ->sortByDesc('count')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Test item counts grouped by laboratory department — read-only aggregation.
+     *
+     * @return list<array{label: string, count: int}>
+     */
+    public function departmentWorkload(int $limit = 8): array
+    {
+        return TestOrderItem::query()
+            ->join('tests', 'tests.id', '=', 'test_order_items.test_id')
+            ->join('departments', 'departments.id', '=', 'tests.department_id')
+            ->selectRaw('departments.name_ar as label, COUNT(*) as aggregate_count')
+            ->groupBy('departments.name_ar')
+            ->orderByDesc('aggregate_count')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => ['label' => $row->label, 'count' => (int) $row->aggregate_count])
+            ->all();
+    }
+
     private function applyOrderFilters($query, BiReportFilters $filters): void
     {
         if ($filters->dateFrom) {

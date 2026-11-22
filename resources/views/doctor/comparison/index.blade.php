@@ -1,12 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('heading', 'المقارنة التاريخية')
 @section('subheading', 'نتائج معتمدة فقط — اتجاه تشغيلي غير تشخيصي')
 @section('content')
 <div class="card">
-    <form method="get" class="grid-2">
-        <div>
-            <label>المريض</label>
-            <select name="patient_id" required>
+    <div class="card-title"><x-icon name="chart" /> معايير المقارنة</div>
+    <p class="card-sub">اختر المريض والفحص والفترة لعرض النتائج المعتمدة واتجاهها.</p>
+    <form method="get" class="form-grid" style="grid-template-columns:repeat(4,1fr);align-items:end">
+        <div class="field">
+            <label for="patient_id">المريض <span class="req">*</span></label>
+            <select id="patient_id" name="patient_id" required>
                 <option value="">اختر المريض</option>
                 @foreach($patients as $patient)
                     <option value="{{ $patient->id }}" @selected($filters->patientId === $patient->id)>
@@ -15,47 +17,46 @@
                 @endforeach
             </select>
         </div>
-        <div>
-            <label>الفحص</label>
-            <select name="test_id">
+        <div class="field">
+            <label for="test_id">الفحص</label>
+            <select id="test_id" name="test_id">
                 <option value="">اختر الفحص</option>
                 @foreach($tests as $test)
                     <option value="{{ $test->id }}" @selected($filters->testId === $test->id)>{{ $test->name_ar }} ({{ $test->code }})</option>
                 @endforeach
             </select>
         </div>
-        <div>
-            <label>من تاريخ الاعتماد</label>
-            <input type="date" name="date_from" value="{{ $filters->dateFrom?->toDateString() }}">
+        <div class="field">
+            <label for="date_from">من تاريخ الاعتماد</label>
+            <input type="date" id="date_from" name="date_from" value="{{ $filters->dateFrom?->toDateString() }}">
         </div>
-        <div>
-            <label>إلى تاريخ</label>
-            <input type="date" name="date_to" value="{{ $filters->dateTo?->toDateString() }}">
+        <div class="field">
+            <label for="date_to">إلى تاريخ</label>
+            <input type="date" id="date_to" name="date_to" value="{{ $filters->dateTo?->toDateString() }}">
         </div>
-        <div class="actions" style="grid-column: 1 / -1">
-            <button class="btn" type="submit">مقارنة</button>
+        <div class="form-actions" style="grid-column:1/-1">
+            <button class="btn" type="submit"><x-icon name="search" /> مقارنة</button>
         </div>
     </form>
 </div>
 
 @if($error)
-    <div class="errors">{{ $error }}</div>
+    <div class="alert alert-error"><x-icon name="alert" /><span>{{ $error }}</span></div>
 @endif
 
 @if($result)
     <div class="card">
-        <h3>الاتجاه (غير طبي)</h3>
+        <div class="card-title"><x-icon name="activity" /> الاتجاه (غير طبي)</div>
         <p>
-            <span class="badge" style="background: {{ $result['trend']['color'] }}; color: #fff">
-                {{ $result['trend']['label_ar'] }}
-            </span>
+            @php $trendTones = ['rising'=>'warning','falling'=>'info','stable'=>'success','incompatible_units'=>'danger','insufficient_data'=>'neutral']; @endphp
+            <x-status-badge :tone="$trendTones[$result['trend']['trend'] ?? 'neutral'] ?? 'neutral'" :label="$result['trend']['label_ar']" />
             @if($result['trend']['relative_change'] !== null)
-                <span class="muted">التغير النسبي: {{ number_format($result['trend']['relative_change'] * 100, 2) }}%</span>
+                <span class="muted-cell small">التغير النسبي: {{ number_format($result['trend']['relative_change'] * 100, 2) }}%</span>
             @endif
         </p>
-        <p class="muted">هذا المؤشر تشغيلي فقط ولا يمثّل تشخيصاً أو نصيحة علاجية.</p>
+        <p class="muted small">هذا المؤشر تشغيلي فقط ولا يمثّل تشخيصاً أو نصيحة علاجية.</p>
         @if(!empty($result['limitations']))
-            <ul class="muted">
+            <ul class="muted small" style="margin:.5rem 0 0;padding-inline-start:1.2rem">
                 @foreach($result['limitations'] as $limitation)
                     <li>{{ $limitation }}</li>
                 @endforeach
@@ -63,9 +64,9 @@
         @endif
     </div>
 
-    <div class="card">
-        <h3>النتائج المعتمدة — {{ $result['patient']->full_name }}</h3>
-        <table>
+    <div class="card flush">
+        <div class="table-wrap">
+        <table class="data">
             <thead>
                 <tr>
                     <th>التاريخ</th>
@@ -79,18 +80,29 @@
             <tbody>
                 @forelse($result['rows'] as $row)
                     <tr>
-                        <td>{{ $row['date'] }}</td>
-                        <td>{{ $row['value'] }}</td>
-                        <td>{{ $row['unit'] }}</td>
-                        <td><span class="badge">{{ $row['classification_label'] }}</span></td>
-                        <td>{{ $row['reference_range'] ?? '—' }}</td>
-                        <td>{{ $row['critical_status'] }}</td>
+                        <td dir="ltr">{{ $row['date'] }}</td>
+                        <td dir="ltr"><b>{{ $row['value'] }}</b></td>
+                        <td dir="ltr">{{ $row['unit'] }}</td>
+                        <td>
+                            @php
+                                $ctone = match($row['classification'] ?? '') {
+                                    'normal' => 'success',
+                                    'critical','panic','critical_low','critical_high' => 'danger',
+                                    'borderline','high','low' => 'warning',
+                                    default => 'neutral',
+                                };
+                            @endphp
+                            <x-status-badge :tone="$ctone" :label="$row['classification_label']" />
+                        </td>
+                        <td class="muted-cell" dir="ltr">{{ $row['reference_range'] ?? '—' }}</td>
+                        <td class="muted-cell">{{ $row['critical_status'] }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="muted">لا توجد نتائج معتمدة.</td></tr>
+                    <tr><td colspan="6"><div class="empty"><div class="empty-icon"><x-icon name="chart" /></div><h3>لا نتائج معتمدة</h3><p>لا توجد نتائج معتمدة في هذه الفترة.</p></div></td></tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 @endif
 @endsection
